@@ -232,7 +232,7 @@ void console_init()
 }
 
 /* So that printf() will output on this device */
-int _write(int file, char *ptr, int len)
+int write(int file, char *ptr, int len)
 {
     switch (file)
     {

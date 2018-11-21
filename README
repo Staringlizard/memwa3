@@ -1,11 +1,20 @@
-*** Building software:
-
+*** Building emulator:
 1. Download the gnu arm cross compiler package
-2. Download memwa2 source code from github
-3. Extract everything and enter folder memwa2
+2. Download memwa_emu_c64 source code from github
+3. Extract everything to memwa_emu_c64 folder
 4. Modify PATH variable to include the bin folder for cross compiler
 5. Make
 6. Done
+
+*** Building software:
+
+1. Download the gnu arm cross compiler package
+2. Download memwa3 source code from github
+3. Extract everything to memwa3 folder
+4. Copy the lib files (.a) from the memwa_emu_c64 build folder to memwa3/out_libemucc and memwa3/out_libemudd
+5. Modify PATH variable to include the bin folder for cross compiler
+6. Make
+7. Done
 
 *** Flashing software:
 
@@ -63,7 +72,7 @@ in order to configure the software and to run programs.
 *** Startup:
 
 1. Unzip the sdcard.zip file onto an sdcard
-2. Insert sdcard into memwa2 board
+2. Insert sdcard into memwa3 board
 3. Power on
 
 *** Key shortcuts:

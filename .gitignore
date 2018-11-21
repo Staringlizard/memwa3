@@ -4,9 +4,10 @@
 
 # Compiled folders #
 ###################
-out_bl/
-out_libemucc/
-out_libemudd/
+out_bl/*.o
+out_target/*.o
+out_libemucc/*.o
+out_libemudd/*.o
 
 # Packages #
 ############
