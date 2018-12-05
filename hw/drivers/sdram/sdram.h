@@ -25,7 +25,7 @@
 #ifndef _SDRAM_H
 #define _SDRAM_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 void stats_select_layer(uint8_t layer);

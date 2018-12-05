@@ -24,7 +24,7 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 void timer_init();

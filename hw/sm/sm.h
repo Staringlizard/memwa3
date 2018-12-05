@@ -24,7 +24,7 @@
 #ifndef _SM_H
 #define _SM_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 typedef enum

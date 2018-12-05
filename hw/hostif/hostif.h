@@ -24,7 +24,7 @@
 #ifndef _HOSTIF_H
 #define _HOSTIF_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 #endif

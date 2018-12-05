@@ -24,7 +24,7 @@
 #ifndef _STAGE_H
 #define _STAGE_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 typedef enum

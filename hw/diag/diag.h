@@ -25,7 +25,7 @@
 #ifndef _DIAG_H
 #define _DIAG_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 typedef enum

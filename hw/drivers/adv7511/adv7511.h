@@ -24,7 +24,7 @@
 #ifndef _ADV7511_H
 #define _ADV7511_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 void adv7511_init();

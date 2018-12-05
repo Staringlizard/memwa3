@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    FatFs/FatFs_uSD/Inc/stm32f7xx_it.h 
+  * @file    FatFs/FatFs_uSD/Inc/stm32h7xx_it.h 
   * @author  MCD Application Team
   * @version V1.0.2
   * @date    18-November-2015 
@@ -44,7 +44,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

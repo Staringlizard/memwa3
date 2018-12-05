@@ -25,8 +25,8 @@
 #include "disp.h"
 #include "sdcard.h"
 #include "ff.h"
-#include "stm32f7xx_hal_flash.h"
-#include "stm32f7xx_hal_rcc.h"
+#include "stm32h7xx_hal_flash.h"
+#include "stm32h7xx_hal_rcc.h"
 
 #define BUFFER_SIZE        512
 
@@ -301,7 +301,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF12_SDMMC1;
 
     GPIO_Init.Pin = GPIO_PIN_8 |    /* SD DAT0 */

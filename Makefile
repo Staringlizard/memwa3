@@ -2,12 +2,12 @@ ARCH_FLAGS=-mcpu=cortex-m7
 CC = arm-none-eabi-gcc
 AR = arm-none-eabi-gcc-ar
 
-BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -O2 -c -DSTM32F767xx
+BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -O2 -c -DSTM32H743xx
 BL_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -O2 -Wl,-Map=./out_bl/bl.map,--gc-section,-T ./link.ld
 
 # NOTE: If building bootloader then change to ORIGIN = 0x08000000 in link.ld
-# and also change the vector tables in system_stm32f7xx.c to 0x00000 (VECT_TAB_OFFSET).
-TARGET_CFLAGS = $(ARCH_FLAGS) $(TARGET_INCLUDES) -mthumb -flto -Wall -static -ffunction-sections -Ofast -c -DSTM32F767xx
+# and also change the vector tables in system_stm32h7xx.c to 0x00000 (VECT_TAB_OFFSET).
+TARGET_CFLAGS = $(ARCH_FLAGS) $(TARGET_INCLUDES) -mthumb -flto -Wall -static -ffunction-sections -Ofast -c -DSTM32H743xx
 TARGET_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -flto -static -Ofast -Wl,-Map=./out_target/target.map,--gc-section,-T ./link.ld
 
 BL_INCLUDES := \
@@ -47,22 +47,22 @@ BL_INCLUDES := \
 
 
 BL_LINK_FILES := \
-	./out_bl/startup_stm32f767xx.o \
+	./out_bl/startup_stm32h767xx.o \
 	./out_bl/bl.o \
 	./out_bl/sdcard.o \
 	./out_bl/diskio.o \
-	./out_bl/system_stm32f7xx.o \
-	./out_bl/stm32f7xx_hal_flash.o \
-	./out_bl/stm32f7xx_hal_flash_ex.o \
-	./out_bl/stm32f7xx_hal_sd.o \
-	./out_bl/stm32f7xx_hal.o \
-	./out_bl/stm32f7xx_hal_gpio.o \
-	./out_bl/stm32f7xx_hal_cortex.o \
-	./out_bl/stm32f7xx_hal_pwr.o \
-	./out_bl/stm32f7xx_hal_pwr_ex.o \
-	./out_bl/stm32f7xx_hal_rcc.o \
-	./out_bl/stm32f7xx_hal_rcc_ex.o \
-	./out_bl/stm32f7xx_ll_sdmmc.o \
+	./out_bl/system_stm32h7xx.o \
+	./out_bl/stm32h7xx_hal_flash.o \
+	./out_bl/stm32h7xx_hal_flash_ex.o \
+	./out_bl/stm32h7xx_hal_sd.o \
+	./out_bl/stm32h7xx_hal.o \
+	./out_bl/stm32h7xx_hal_gpio.o \
+	./out_bl/stm32h7xx_hal_cortex.o \
+	./out_bl/stm32h7xx_hal_pwr.o \
+	./out_bl/stm32h7xx_hal_pwr_ex.o \
+	./out_bl/stm32h7xx_hal_rcc.o \
+	./out_bl/stm32h7xx_hal_rcc_ex.o \
+	./out_bl/stm32h7xx_ll_sdmmc.o \
 	./out_bl/ff.o \
 	./out_bl/ccsbcs.o \
 
@@ -103,7 +103,7 @@ TARGET_INCLUDES := \
 
 TARGET_LINK_FILES := \
 	./out_target/config.o \
-	./out_target/startup_stm32f767xx.o \
+	./out_target/startup_stm32h767xx.o \
 	./out_target/sidbus.o \
 	./out_target/timer.o \
 	./out_target/sdcard.o \
@@ -122,35 +122,34 @@ TARGET_LINK_FILES := \
 	./out_target/usbd_cdc_if.o \
 	./out_target/usbd_desc.o \
 	./out_target/usbd_conf.o \
-	./out_target/system_stm32f7xx.o \
-	./out_target/stm32f7xx_hal_sd.o \
-	./out_target/stm32f7xx_hal.o \
-	./out_target/stm32f7xx_hal_ltdc.o \
-	./out_target/stm32f7xx_hal_ltdc_ex.o \
-	./out_target/stm32f7xx_hal_sdram.o \
-	./out_target/stm32f7xx_hal_pcd.o \
-	./out_target/stm32f7xx_hal_pcd_ex.o \
-	./out_target/stm32f7xx_hal_gpio.o \
-	./out_target/stm32f7xx_hal_cortex.o \
-	./out_target/stm32f7xx_hal_pwr.o \
-	./out_target/stm32f7xx_hal_pwr_ex.o \
-	./out_target/stm32f7xx_hal_hcd.o \
-	./out_target/stm32f7xx_hal_rcc.o \
-	./out_target/stm32f7xx_hal_i2c.o \
-	./out_target/stm32f7xx_hal_rcc_ex.o \
-	./out_target/stm32f7xx_hal_i2c_ex.o \
-	./out_target/stm32f7xx_hal_crc.o \
-	./out_target/stm32f7xx_hal_crc_ex.o \
-	./out_target/stm32f7xx_hal_rng.o \
-	./out_target/stm32f7xx_ll_fmc.o \
-	./out_target/stm32f7xx_ll_sdmmc.o \
-	./out_target/stm32f7xx_ll_usb.o \
-	./out_target/stm32f7xx_hal_tim.o \
-	./out_target/stm32f7xx_hal_tim_ex.o \
-	./out_target/stm32f7xx_hal_dma.o \
-	./out_target/stm32f7xx_hal_dma_ex.o \
-	./out_target/stm32f7xx_hal_flash.o \
-	./out_target/stm32f7xx_hal_flash_ex.o \
+	./out_target/system_stm32h7xx.o \
+	./out_target/stm32h7xx_hal_sd.o \
+	./out_target/stm32h7xx_hal.o \
+	./out_target/stm32h7xx_hal_ltdc.o \
+	./out_target/stm32h7xx_hal_sdram.o \
+	./out_target/stm32h7xx_hal_pcd.o \
+	./out_target/stm32h7xx_hal_pcd_ex.o \
+	./out_target/stm32h7xx_hal_gpio.o \
+	./out_target/stm32h7xx_hal_cortex.o \
+	./out_target/stm32h7xx_hal_pwr.o \
+	./out_target/stm32h7xx_hal_pwr_ex.o \
+	./out_target/stm32h7xx_hal_hcd.o \
+	./out_target/stm32h7xx_hal_rcc.o \
+	./out_target/stm32h7xx_hal_i2c.o \
+	./out_target/stm32h7xx_hal_rcc_ex.o \
+	./out_target/stm32h7xx_hal_i2c_ex.o \
+	./out_target/stm32h7xx_hal_crc.o \
+	./out_target/stm32h7xx_hal_crc_ex.o \
+	./out_target/stm32h7xx_hal_rng.o \
+	./out_target/stm32h7xx_ll_fmc.o \
+	./out_target/stm32h7xx_ll_sdmmc.o \
+	./out_target/stm32h7xx_ll_usb.o \
+	./out_target/stm32h7xx_hal_tim.o \
+	./out_target/stm32h7xx_hal_tim_ex.o \
+	./out_target/stm32h7xx_hal_dma.o \
+	./out_target/stm32h7xx_hal_dma_ex.o \
+	./out_target/stm32h7xx_hal_flash.o \
+	./out_target/stm32h7xx_hal_flash_ex.o \
 	./out_target/irq.o \
 	./out_target/usbh_core.o \
 	./out_target/usbh_ctlreq.o \
@@ -182,24 +181,24 @@ $(BL):
 	$(CC) $(BL_CFLAGS) -o out_bl/sdcard.o ./hw/drivers/sdcard/sdcard.c
 	$(CC) $(BL_CFLAGS) -o out_bl/diskio.o ./hw/drivers/sdcard/diskio.c
 	$(CC) $(BL_CFLAGS) -o out_bl/disp.o ./hw/drivers/disp/disp.c
-	$(CC) $(BL_CFLAGS) -o out_bl/system_stm32f7xx.o ./hw/core/cmsis_boot/system_stm32f7xx.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_sd.o ./hw/hal/stm32f7xx_hal_sd.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal.o ./hw/hal/stm32f7xx_hal.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_flash.o ./hw/hal/stm32f7xx_hal_flash.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_flash_ex.o ./hw/hal/stm32f7xx_hal_flash_ex.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_ltdc.o ./hw/hal/stm32f7xx_hal_ltdc.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_gpio.o ./hw/hal/stm32f7xx_hal_gpio.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_cortex.o ./hw/hal/stm32f7xx_hal_cortex.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_pwr.o ./hw/hal/stm32f7xx_hal_pwr.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_pwr_ex.o ./hw/hal/stm32f7xx_hal_pwr_ex.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_rcc.o ./hw/hal/stm32f7xx_hal_rcc.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_hal_rcc_ex.o ./hw/hal/stm32f7xx_hal_rcc_ex.c
-	$(CC) $(BL_CFLAGS) -o out_bl/stm32f7xx_ll_sdmmc.o ./hw/hal/stm32f7xx_ll_sdmmc.c
+	$(CC) $(BL_CFLAGS) -o out_bl/system_stm32h7xx.o ./hw/core/cmsis_boot/system_stm32h7xx.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_sd.o ./hw/hal/stm32h7xx_hal_sd.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal.o ./hw/hal/stm32h7xx_hal.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_flash.o ./hw/hal/stm32h7xx_hal_flash.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_flash_ex.o ./hw/hal/stm32h7xx_hal_flash_ex.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_ltdc.o ./hw/hal/stm32h7xx_hal_ltdc.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_gpio.o ./hw/hal/stm32h7xx_hal_gpio.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_cortex.o ./hw/hal/stm32h7xx_hal_cortex.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_pwr.o ./hw/hal/stm32h7xx_hal_pwr.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_pwr_ex.o ./hw/hal/stm32h7xx_hal_pwr_ex.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_rcc.o ./hw/hal/stm32h7xx_hal_rcc.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_rcc_ex.o ./hw/hal/stm32h7xx_hal_rcc_ex.c
+	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_ll_sdmmc.o ./hw/hal/stm32h7xx_ll_sdmmc.c
 	$(CC) $(BL_CFLAGS) -o out_bl/irq.o ./hw/irq/irq.c
 	$(CC) $(BL_CFLAGS) -o out_bl/ff.o ./hw/mware/fatfs/ff.c
 	$(CC) $(BL_CFLAGS) -o out_bl/ccsbcs.o ./hw/mware/fatfs/ccsbcs.c
 	$(CC) $(BL_CFLAGS) -o out_bl/bl.o ./bl/bl.c
-	$(CC) $(BL_CFLAGS) -o out_bl/startup_stm32f767xx.o ./hw/core/cmsis_boot/startup/startup_stm32f767xx.s
+	$(CC) $(BL_CFLAGS) -o out_bl/startup_stm32h767xx.o ./hw/core/cmsis_boot/startup/startup_stm32h767xx.s
 
 	@echo Linking...
 	$(CC) $(BL_LFLAGS) -o out_bl/bl.elf $(BL_LINK_FILES)
@@ -223,35 +222,34 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/keybd.o ./hw/util/keybd/keybd.c
 	$(CC) $(TARGET_CFLAGS) -DSCREEN_X2 -o out_target/stage.o ./hw/util/stage/stage.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/diag.o ./hw/diag/diag.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/system_stm32f7xx.o ./hw/core/cmsis_boot/system_stm32f7xx.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_sd.o ./hw/hal/stm32f7xx_hal_sd.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal.o ./hw/hal/stm32f7xx_hal.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_ltdc.o ./hw/hal/stm32f7xx_hal_ltdc.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_ltdc_ex.o ./hw/hal/stm32f7xx_hal_ltdc_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_sdram.o ./hw/hal/stm32f7xx_hal_sdram.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_pcd.o ./hw/hal/stm32f7xx_hal_pcd.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_pcd_ex.o ./hw/hal/stm32f7xx_hal_pcd_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_gpio.o ./hw/hal/stm32f7xx_hal_gpio.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_cortex.o ./hw/hal/stm32f7xx_hal_cortex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_pwr.o ./hw/hal/stm32f7xx_hal_pwr.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_crc.o ./hw/hal/stm32f7xx_hal_crc.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_crc_ex.o ./hw/hal/stm32f7xx_hal_crc_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_pwr_ex.o ./hw/hal/stm32f7xx_hal_pwr_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_hcd.o ./hw/hal/stm32f7xx_hal_hcd.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_rcc.o ./hw/hal/stm32f7xx_hal_rcc.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_i2c.o ./hw/hal/stm32f7xx_hal_i2c.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_rcc_ex.o ./hw/hal/stm32f7xx_hal_rcc_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_i2c_ex.o ./hw/hal/stm32f7xx_hal_i2c_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_rng.o ./hw/hal/stm32f7xx_hal_rng.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_ll_fmc.o ./hw/hal/stm32f7xx_ll_fmc.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_ll_sdmmc.o ./hw/hal/stm32f7xx_ll_sdmmc.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_ll_usb.o ./hw/hal/stm32f7xx_ll_usb.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_tim.o ./hw/hal/stm32f7xx_hal_tim.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_tim_ex.o ./hw/hal/stm32f7xx_hal_tim_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_dma.o ./hw/hal/stm32f7xx_hal_dma.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_dma_ex.o ./hw/hal/stm32f7xx_hal_dma_ex.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_flash.o ./hw/hal/stm32f7xx_hal_flash.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/stm32f7xx_hal_flash_ex.o ./hw/hal/stm32f7xx_hal_flash_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/system_stm32h7xx.o ./hw/core/cmsis_boot/system_stm32h7xx.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_sd.o ./hw/hal/stm32h7xx_hal_sd.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal.o ./hw/hal/stm32h7xx_hal.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_ltdc.o ./hw/hal/stm32h7xx_hal_ltdc.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_sdram.o ./hw/hal/stm32h7xx_hal_sdram.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_pcd.o ./hw/hal/stm32h7xx_hal_pcd.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_pcd_ex.o ./hw/hal/stm32h7xx_hal_pcd_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_gpio.o ./hw/hal/stm32h7xx_hal_gpio.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_cortex.o ./hw/hal/stm32h7xx_hal_cortex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_pwr.o ./hw/hal/stm32h7xx_hal_pwr.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_crc.o ./hw/hal/stm32h7xx_hal_crc.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_crc_ex.o ./hw/hal/stm32h7xx_hal_crc_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_pwr_ex.o ./hw/hal/stm32h7xx_hal_pwr_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_hcd.o ./hw/hal/stm32h7xx_hal_hcd.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_rcc.o ./hw/hal/stm32h7xx_hal_rcc.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_i2c.o ./hw/hal/stm32h7xx_hal_i2c.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_rcc_ex.o ./hw/hal/stm32h7xx_hal_rcc_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_i2c_ex.o ./hw/hal/stm32h7xx_hal_i2c_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_rng.o ./hw/hal/stm32h7xx_hal_rng.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_ll_fmc.o ./hw/hal/stm32h7xx_ll_fmc.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_ll_sdmmc.o ./hw/hal/stm32h7xx_ll_sdmmc.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_ll_usb.o ./hw/hal/stm32h7xx_ll_usb.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_tim.o ./hw/hal/stm32h7xx_hal_tim.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_tim_ex.o ./hw/hal/stm32h7xx_hal_tim_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_dma.o ./hw/hal/stm32h7xx_hal_dma.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_dma_ex.o ./hw/hal/stm32h7xx_hal_dma_ex.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_flash.o ./hw/hal/stm32h7xx_hal_flash.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_flash_ex.o ./hw/hal/stm32h7xx_hal_flash_ex.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/irq.o ./hw/irq/irq.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/usbh_core.o ./hw/mware/usb/host/core/usbh_core.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/usbh_ctlreq.o ./hw/mware/usb/host/core/usbh_ctlreq.c
@@ -275,7 +273,7 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/sm.o ./hw/sm/sm.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/romcc.o ./hw/rom/romcc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/romdd.o ./hw/rom/romdd.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/startup_stm32f767xx.o ./hw/core/cmsis_boot/startup/startup_stm32f767xx.s
+	$(CC) $(TARGET_CFLAGS) -o out_target/startup_stm32h767xx.o ./hw/core/cmsis_boot/startup/startup_stm32h767xx.s
 
 	@echo Linking...
 	$(CC) $(TARGET_LFLAGS) -o out_target/target.elf $(TARGET_LINK_FILES) -L./out_libemucc -lemucc -L./out_libemudd -lemudd

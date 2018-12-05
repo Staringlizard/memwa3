@@ -27,7 +27,7 @@
  */
 
 #include "sidbus.h"
-#include "stm32f7xx_hal_gpio.h"
+#include "stm32h7xx_hal_gpio.h"
 #include "config.h"
 #include "rng.h"
 

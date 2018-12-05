@@ -24,7 +24,7 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include <stdio.h>
 
 /* This must ALWAYS be uppdated for every release */

@@ -24,6 +24,6 @@
 #ifndef _BL_H
 #define _BL_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 #endif

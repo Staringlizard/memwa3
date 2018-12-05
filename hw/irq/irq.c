@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    FatFs/FatFs_uSD/Src/stm32f7xx_it.c
+  * @file    FatFs/FatFs_uSD/Src/stm32h7xx_it.c
   * @author  MCD Application Team
   * @version V1.0.2
   * @date    18-November-2015 

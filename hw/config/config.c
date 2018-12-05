@@ -31,12 +31,12 @@
  */
 
 #include "config.h"
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_rcc.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_i2c_ex.h"
-#include "stm32f7xx_hal_sdram.h"
-#include "stm32f7xx_hal_flash.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "stm32h7xx_hal_gpio.h"
+#include "stm32h7xx_hal_i2c_ex.h"
+#include "stm32h7xx_hal_sdram.h"
+#include "stm32h7xx_hal_flash.h"
 #include "sdcard.h"
 #include "sdram.h"
 #include "adv7511.h"
@@ -69,7 +69,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF12_SDMMC1;
 
     GPIO_Init.Pin = GPIO_PIN_8 |    /* SD DAT0 */
@@ -99,7 +99,7 @@ void  HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF12_OTG_HS_FS;
 
     GPIO_Init.Pin = GPIO_PIN_14 |    /* OTG_HS_DM */
@@ -125,7 +125,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
-    GPIO_Init.Speed = GPIO_SPEED_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF10_OTG_FS;
 
     /* Configure DM DP Pins */
@@ -161,7 +161,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 
     GPIO_Init.Mode = GPIO_MODE_AF_OD;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF4_I2C4;
 
     GPIO_Init.Pin = GPIO_PIN_12 |    /* I2C4_SCL */

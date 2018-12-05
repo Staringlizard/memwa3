@@ -24,11 +24,11 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_sd.h"
-#include "stm32f7xx_hal_hcd.h"
-#include "stm32f7xx_hal_i2c.h"
-#include "stm32f7xx_hal_sdram.h"
+#include "stm32h7xx_hal_dma.h"
+#include "stm32h7xx_hal_sd.h"
+#include "stm32h7xx_hal_hcd.h"
+#include "stm32h7xx_hal_i2c.h"
+#include "stm32h7xx_hal_sdram.h"
 #include "main.h"
 
 #define SDCARD_CD_PIN   GPIO_PIN_7

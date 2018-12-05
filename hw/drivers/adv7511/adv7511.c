@@ -27,7 +27,7 @@
 
 #include "adv7511.h"
 #include "config.h"
-#include "stm32f7xx_hal_i2c.h"
+#include "stm32h7xx_hal_i2c.h"
 
 #define I2C_ADDRESS      0x72
 #define I2C_OWN_ADDRESS  0x00

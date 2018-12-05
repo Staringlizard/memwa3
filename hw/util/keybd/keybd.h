@@ -24,7 +24,7 @@
 #ifndef _KEYBD_H
 #define _KEYBD_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 #include "if.h"
 

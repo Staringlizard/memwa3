@@ -24,7 +24,7 @@
 #ifndef _RNG_H
 #define _RNG_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 void rng_init();

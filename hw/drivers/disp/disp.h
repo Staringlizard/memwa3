@@ -24,7 +24,7 @@
 #ifndef _DISP_H
 #define _DISP_H
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "main.h"
 
 #define MEM_ADDR_BUFFER0    0
