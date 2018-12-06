@@ -149,9 +149,9 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInit;
 
     /* Configure the I2C clock source */
-    RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
-    RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
+    //RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
+    //RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
+    //HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
 
     /* Enable GPIOs clock */
     __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -460,6 +460,23 @@ void HAL_JOYST_MspInit() /* Memwa2 specific */
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
+void HAL_LED_MspInit() /* Memwa2 specific */
+{
+    GPIO_InitTypeDef GPIO_Init;
+    
+    /* Enable GPIOs clock */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    GPIO_Init.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_Init.Pull = GPIO_PULLUP;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
+
+    GPIO_Init.Pin = GPIO_PIN_13 |    /* LED_R1 */
+                    GPIO_PIN_14 |    /* LED_G1 */
+                    GPIO_PIN_15;     /* LED_B1 */
+    HAL_GPIO_Init(GPIOC, &GPIO_Init);
+}
+
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
   /*Configure the SysTick to have interrupt in ms time basis*/
@@ -579,6 +596,11 @@ static void config_clks()
     HAL_NVIC_SetPriority(SysTick_IRQn, 1, 1);
 }
 
+static void config_led()
+{
+    led_init();
+}
+
 static void config_crc()
 {
     crc_init();
@@ -648,6 +670,7 @@ void config_init()
 {
     config_enable_cpu_cache();
     config_clks();
+    config_led();
     config_sdram();
     config_sdcard();
     config_crc();

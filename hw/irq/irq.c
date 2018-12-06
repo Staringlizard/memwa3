@@ -55,7 +55,6 @@
 
 extern HCD_HandleTypeDef hhcd;
 extern PCD_HandleTypeDef hpcd;
-extern PCD_HandleTypeDef hpcd;
 extern LTDC_HandleTypeDef g_ltdc_handle;
 
 /******************************************************************************/

@@ -35,16 +35,16 @@
 #define SDCARD_CD_PORT  GPIOA   
 
 #define SID_SET_CS_HIGH() \
-  GPIOI->BSRRL = (1 << 6);
+  GPIOI->BSRRL = GPIO_PIN_6;
 
 #define SID_SET_CS_LOW() \
-  GPIOI->BSRRH = (1 << 6);
+  GPIOI->BSRRH = GPIO_PIN_6;
 
 #define SID_ASSERT_READ() \
-  GPIOI->BSRRL = (1 << 5);
+  GPIOI->BSRRL = GPIO_PIN_5;
 
 #define SID_ASSERT_WRITE() \
-  GPIOI->BSRRH = (1 << 5);
+  GPIOI->BSRRH = GPIO_PIN_5;
 
 #define SID_SET_DATA(data) \
   GPIOH->BSRRH = 0xFF00; \
@@ -56,6 +56,24 @@
 
 #define SID_GET_DATA() \
   (GPIOH->IDR & 0xFF00) >> 8;
+
+#define LED_SET_R1_HIGH() \
+  GPIOC->BSRRL = GPIO_PIN_13;
+
+#define LED_SET_R1_LOW() \
+  GPIOC->BSRRH = GPIO_PIN_13;
+
+#define LED_SET_G1_HIGH() \
+  GPIOC->BSRRL = GPIO_PIN_14;
+
+#define LED_SET_G1_LOW() \
+  GPIOC->BSRRH = GPIO_PIN_14;
+
+#define LED_SET_B1_HIGH() \
+  GPIOC->BSRRL = GPIO_PIN_15;
+
+#define LED_SET_B1_LOW() \
+  GPIOC->BSRRH = GPIO_PIN_15;
 
 
 void config_init();

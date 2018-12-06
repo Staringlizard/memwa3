@@ -225,6 +225,9 @@ void console_init()
   /* Start Device Process */
   USBD_Start(&g_usbd_device);
 
+  /* Enable the USB voltage level detector */
+  HAL_PWREx_EnableUSBVoltageDetector();
+
   /* Register receive function */
   CDC_Iif_RegisterReceiveCb(console_receive);
 
@@ -232,7 +235,7 @@ void console_init()
 }
 
 /* So that printf() will output on this device */
-int write(int file, char *ptr, int len)
+int _write(int file, char *ptr, int len)
 {
     switch (file)
     {

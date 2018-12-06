@@ -30,6 +30,7 @@ BL_INCLUDES := \
 	-I./hw/drivers/usbd_ll \
 	-I./hw/drivers/usbh_ll \
 	-I./hw/drivers/joyst \
+	-I./hw/drivers/led \
 	-I./hw/mware/fatfs \
 	-I./hw/mware/usb/host/core \
 	-I./hw/mware/usb/host/hid \
@@ -87,6 +88,7 @@ TARGET_INCLUDES := \
 	-I./hw/drivers/usbd_ll \
 	-I./hw/drivers/usbh_ll \
 	-I./hw/drivers/joyst \
+	-I./hw/drivers/led \
 	-I./hw/mware/fatfs \
 	-I./hw/mware/usb/host/core \
 	-I./hw/mware/usb/host/hid \
@@ -111,6 +113,7 @@ TARGET_LINK_FILES := \
 	./out_target/crc.o \
 	./out_target/rng.o \
 	./out_target/joyst.o \
+	./out_target/led.o \
 	./out_target/diskio.o \
 	./out_target/sdram.o \
 	./out_target/adv7511.o \
@@ -219,6 +222,7 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/crc.o ./hw/drivers/crc/crc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/rng.o ./hw/drivers/rng/rng.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/joyst.o ./hw/drivers/joyst/joyst.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/led.o ./hw/drivers/led/led.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/sdram.o ./hw/drivers/sdram/sdram.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/adv7511.o ./hw/drivers/adv7511/adv7511.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/disp.o ./hw/drivers/disp/disp.c

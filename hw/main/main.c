@@ -86,6 +86,8 @@ int main()
 
     config_init();
 
+    led_set(1, 0, 0);
+
     /* Clean sdram */
     for(i = 0; i < SDRAM_SIZE; i++)
     {
