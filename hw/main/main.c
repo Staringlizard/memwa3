@@ -91,7 +91,7 @@ int main()
     {
         *(uint8_t *)(SDRAM_ADDR + i) = 0;
     }
-
+#if 0
     /* Card inserted ? */
     if(sdcard_inserted() == 0)
     {
@@ -120,7 +120,7 @@ int main()
             }
         }
     }
-
+#endif
     disp_set_memory(MEM_ADDR_BUFFER0, CC_DISP_BUFFER1_ADDR);
     disp_set_memory(MEM_ADDR_BUFFER1, CC_DISP_BUFFER2_ADDR);
     disp_set_memory(MEM_ADDR_BUFFER2, CC_DISP_BUFFER3_ADDR);

@@ -108,6 +108,9 @@ void adv7511_configure()
     adv7511_set_bits(0x17, 0x00);  /* DE Generator Enable = Disable */
 }
 
+#define HAL_I2C_Master_WriteReg(x,r,e,w,v) 1
+#define HAL_I2C_Master_ReadReg(x,r,e,w,v) 1
+
 void adv7511_wr_reg(uint8_t reg, uint8_t val)
 {
     if(HAL_I2C_Master_WriteReg(&g_i2c_handle, (uint16_t)I2C_ADDRESS, &reg, &val, 2000) != HAL_OK)

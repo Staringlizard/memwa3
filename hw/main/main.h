@@ -47,8 +47,8 @@
 #define CC_BROM_BASE_ADDR      (CC_RAM_BASE_ADDR + IF_MEMORY_CC_RAM_SIZE)
 #define CC_CROM_BASE_ADDR      (CC_RAM_BASE_ADDR + IF_MEMORY_CC_RAM_SIZE)
 
-/* CC IO address needs to be unique, lets use the fast DTCM for this memory */
-#define CC_IO_BASE_ADDR        0x20000000
+/* CC IO address needs to be unique, lets use RAM_3 for this memory */
+#define CC_IO_BASE_ADDR        0x38000000
 #define CC_UTIL1_BASE_ADDR     (CC_CROM_BASE_ADDR + IF_MEMORY_CC_CROM_SIZE)
 #define CC_UTIL2_BASE_ADDR     (CC_UTIL1_BASE_ADDR + IF_MEMORY_CC_UTIL1_SIZE)
 #define DD_ALL_BASE_ADDR       (CC_UTIL2_BASE_ADDR + IF_MEMORY_CC_UTIL2_SIZE)

@@ -64,7 +64,7 @@ void sidbus_irq()
             SID_SET_CS_HIGH();
 
             /* Disable sidbus IRQ */
-            EXTI->FTSR &= ~GPIO_PIN_13;
+            EXTI->FTSR1 &= ~GPIO_PIN_13;
             g_sidbus_state = SIDBUS_STATE_ACTIVATE_CHIP;
             g_lock = WRITE_UNLOCKED;
             break;
@@ -92,7 +92,7 @@ void sidbus_write(uint8_t addr, uint8_t value)
     SID_SET_DATA(value);
 
     /* Enable sidbus IRQ */
-    EXTI->FTSR |= GPIO_PIN_13;
+    EXTI->FTSR1 |= GPIO_PIN_13;
 }
 
 uint8_t sidbus_read(uint8_t addr)

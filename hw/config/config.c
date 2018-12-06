@@ -31,8 +31,8 @@
  */
 
 #include "config.h"
-#include "stm32h7xx_hal_rcc.h"
-#include "stm32h7xx_hal_rcc.h"
+#include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_rcc_ex.h"
 #include "stm32h7xx_hal_gpio.h"
 #include "stm32h7xx_hal_i2c_ex.h"
 #include "stm32h7xx_hal_sdram.h"
@@ -69,7 +69,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_Init.Alternate = GPIO_AF12_SDMMC1;
 
     GPIO_Init.Pin = GPIO_PIN_8 |    /* SD DAT0 */
@@ -84,7 +84,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Mode = GPIO_MODE_INPUT;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_LOW;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
 
     GPIO_Init.Pin = GPIO_PIN_7;     /* R3 PA7 SD CD */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
@@ -99,15 +99,15 @@ void  HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_Init.Alternate = GPIO_AF12_OTG_HS_FS;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_Init.Alternate = GPIO_AF12_OTG2_FS;
 
     GPIO_Init.Pin = GPIO_PIN_14 |    /* OTG_HS_DM */
                     GPIO_PIN_15;     /* OTG_HS_DP */
     HAL_GPIO_Init(GPIOB, &GPIO_Init);
 
     /* Enable USB HS Clocks */
-    __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+    __HAL_RCC_USB1_OTG_HS_CLK_ENABLE();
 
     /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, 5, 0);
@@ -125,8 +125,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
-    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_Init.Alternate = GPIO_AF10_OTG_FS;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_Init.Alternate = GPIO_AF10_OTG1_FS;
 
     /* Configure DM DP Pins */
     GPIO_Init.Pin = GPIO_PIN_11 | /* OTG_FS_DM */
@@ -134,7 +134,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_GPIO_Init(GPIOA, &GPIO_Init); 
 
     /* Enable USB FS Clock */
-    __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
+    __HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
 
     /* Set USBFS Interrupt priority */
     HAL_NVIC_SetPriority(OTG_FS_IRQn, 6, 0);
@@ -150,7 +150,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 
     /* Configure the I2C clock source */
     RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
-    RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_PCLK1;
+    RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
     HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
 
     /* Enable GPIOs clock */
@@ -161,7 +161,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 
     GPIO_Init.Mode = GPIO_MODE_AF_OD;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_Init.Alternate = GPIO_AF4_I2C4;
 
     GPIO_Init.Pin = GPIO_PIN_12 |    /* I2C4_SCL */
@@ -177,7 +177,7 @@ void HAL_ADV7511_MspInit() /* Memwa2 specific */
 
     GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_FAST;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
 
     GPIO_Init.Pin = GPIO_PIN_15; /* A13 PA15 ADV7511 IRQ */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
@@ -204,7 +204,7 @@ void HAL_SDRAM_MspInit(SDRAM_HandleTypeDef *hsdram)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_FAST;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Alternate = GPIO_AF12_FMC;
   
     GPIO_Init.Pin = GPIO_PIN_2 | /* M4 PC2 FMC_SDNE0 */
@@ -281,7 +281,7 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef *hltdc)
 
     GPIO_Init.Mode = GPIO_MODE_AF_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
-    GPIO_Init.Speed = GPIO_SPEED_FAST;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
 
     /* Watch out, LTDC has 2 alternative func mappings */
     GPIO_Init.Alternate = GPIO_AF14_LTDC;
@@ -366,7 +366,7 @@ void HAL_SIDBUS_MspInit() /* Memwa2 specific */
 
     GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
-    GPIO_Init.Speed = GPIO_SPEED_FAST;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
 
     /* Sidbus data lines */
     GPIO_Init.Pin = GPIO_PIN_8 | /* M12 PH8 SIDBUS D0 */
@@ -392,11 +392,11 @@ void HAL_SIDBUS_MspInit() /* Memwa2 specific */
     /* Sidbus clock external interrupt */
     GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
     GPIO_Init.Pull = GPIO_NOPULL;
-    GPIO_Init.Speed = GPIO_SPEED_FAST;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_Init.Pin = GPIO_PIN_13; /* A8 PG13 SIDBUS CLK */
     HAL_GPIO_Init(GPIOG, &GPIO_Init);
 
-    EXTI->FTSR &= ~GPIO_PIN_13; /* Disable sidbus irq directly */
+    EXTI->FTSR1 &= ~GPIO_PIN_13; /* Disable sidbus irq directly */
 
     /*
      * Enable and set interrupt.
@@ -422,7 +422,7 @@ void HAL_JOYST_MspInit() /* Memwa2 specific */
 
     GPIO_Init.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_LOW;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
 
     GPIO_Init.Pin = GPIO_PIN_10; /* D15 PA10 JOY_A5 FIRE */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
@@ -500,59 +500,80 @@ static void mpu_config(void)
 
 static void config_clks()
 {
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    __HAL_RCC_PWR_CLK_ENABLE();
-
+    /**Supply configuration update enable 
+    */
+    MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
+    /**Configure the main internal regulator output voltage 
+    */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-#ifdef USE_HSE
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
+    {
+
+    }
+    /**Macro to configure the PLL clock source 
+    */
+    __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 8;
-#else
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-    RCC_OscInitStruct.PLL.PLLM = 16;
-#endif  
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLN = 432;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 9;
-
-    HAL_RCC_OscConfig(&RCC_OscInitStruct);
-
-    HAL_PWREx_EnableOverDrive();
-
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK |
-                                  RCC_CLOCKTYPE_SYSCLK |
-                                  RCC_CLOCKTYPE_PCLK1 |
-                                  RCC_CLOCKTYPE_PCLK2;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 1;
+    RCC_OscInitStruct.PLL.PLLN = 100;
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 128;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        while(1) {;}
+    }
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
+                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
-    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC |
-                                               RCC_PERIPHCLK_I2C4 |
-                                               RCC_PERIPHCLK_SDMMC1 |
-                                               RCC_PERIPHCLK_CLK48;
-    PeriphClkInitStruct.PLLSAI.PLLSAIN = 320;
-    PeriphClkInitStruct.PLLSAI.PLLSAIR = 4;
-    PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
-    PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV8;
-    PeriphClkInitStruct.PLLSAIDivQ = 1;
-    PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
-    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_HSI;
-    PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
-    PeriphClkInitStruct.Sdmmc1ClockSelection = RCC_SDMMC1CLKSOURCE_CLK48;
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    {
+        while(1) {;}
+    }
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_RNG
+                              |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C4
+                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FMC;
+    PeriphClkInitStruct.PLL3.PLL3M = 2;
+    PeriphClkInitStruct.PLL3.PLL3N = 28;
+    PeriphClkInitStruct.PLL3.PLL3P = 2;
+    PeriphClkInitStruct.PLL3.PLL3Q = 2;
+    PeriphClkInitStruct.PLL3.PLL3R = 2;
+    PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2;
+    PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+    PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_D1HCLK;
+    PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
+    PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+        while(1) {;}
+    }
 
     /* SysTick_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(SysTick_IRQn, 1, 1);
@@ -591,7 +612,7 @@ static void config_joyst()
 static void config_adv7511()
 {
     adv7511_init();
-    adv7511_configure();
+    //adv7511_configure();
 }
 
 static void config_sdram()
@@ -625,7 +646,6 @@ static void config_enable_cpu_cache()
 
 void config_init()
 {
-    HAL_EnableFMCMemorySwapping();
     config_enable_cpu_cache();
     config_clks();
     config_sdram();

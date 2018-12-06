@@ -84,12 +84,12 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-  HAL_SD_ErrorTypedef hal_sd_res = SD_OK;
+  HAL_StatusTypeDef hal_sd_res = HAL_OK;
   DRESULT res = RES_OK;
 
-  hal_sd_res = HAL_SD_ReadBlocks(&g_sd_handle, (uint32_t *)buff, (uint32_t)(sector), BLOCK_SIZE, count);
+  hal_sd_res = HAL_SD_ReadBlocks(&g_sd_handle, buff, sector, count, 1000);
 
-  if(hal_sd_res != SD_OK)
+  if(hal_sd_res != HAL_OK)
   {
       res = RES_ERROR;
   }
@@ -113,12 +113,12 @@ DRESULT disk_write (
 	UINT count        	/* Number of sectors to write */
 )
 {
-  HAL_SD_ErrorTypedef hal_sd_res = SD_OK;
+  HAL_StatusTypeDef hal_sd_res = HAL_OK;
   DRESULT res = RES_OK;
 
-  hal_sd_res = HAL_SD_WriteBlocks(&g_sd_handle, (uint32_t *)buff, (uint32_t)(sector), BLOCK_SIZE, count);
+  hal_sd_res = HAL_SD_WriteBlocks(&g_sd_handle, (uint8_t *)buff, sector, count, 1000);
 
-  if(hal_sd_res != SD_OK)
+  if(hal_sd_res != HAL_OK)
   {
       res = RES_ERROR;
   }
@@ -143,7 +143,7 @@ DRESULT disk_ioctl (
 {
   DRESULT res = RES_OK;
 
-  HAL_SD_CardInfoTypedef HAL_SD_CardInfoType;
+  HAL_SD_CardInfoTypeDef HAL_SD_CardInfoType;
   
   if(!initialized)
   {
@@ -159,8 +159,8 @@ DRESULT disk_ioctl (
   
   /* Get number of sectors on the disk (DWORD) */
   case GET_SECTOR_COUNT:
-    HAL_SD_Get_CardInfo(&g_sd_handle, &HAL_SD_CardInfoType);
-    *(DWORD*)buff = HAL_SD_CardInfoType.CardCapacity / BLOCK_SIZE;
+    HAL_SD_GetCardInfo(&g_sd_handle, &HAL_SD_CardInfoType);
+    *(DWORD*)buff = HAL_SD_CardInfoType.BlockNbr;
     res = RES_OK;
     break;
   

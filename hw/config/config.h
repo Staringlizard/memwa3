@@ -35,27 +35,27 @@
 #define SDCARD_CD_PORT  GPIOA   
 
 #define SID_SET_CS_HIGH() \
-  GPIOI->BSRR = (1 << 6);
+  GPIOI->BSRRL = (1 << 6);
 
 #define SID_SET_CS_LOW() \
-  GPIOI->BSRR = (1 << 6) << 16;
+  GPIOI->BSRRH = (1 << 6);
 
 #define SID_ASSERT_READ() \
-  GPIOI->BSRR = (1 << 5);
+  GPIOI->BSRRL = (1 << 5);
 
 #define SID_ASSERT_WRITE() \
-  GPIOI->BSRR = (1 << 5) << 16;
+  GPIOI->BSRRH = (1 << 5);
 
 #define SID_SET_DATA(data) \
-  GPIOH->BSRR = 0xFF00 << 16; \
-  GPIOH->BSRR = data << 8;
+  GPIOH->BSRRH = 0xFF00; \
+  GPIOH->BSRRL = data << 8;
 
 #define SID_SET_ADDR(addr) \
-  GPIOI->BSRR = 0x0F80 << 16; \
-  GPIOI->BSRR = (addr & 0x1F) << 7;
+  GPIOI->BSRRH = 0x0F80; \
+  GPIOI->BSRRL = (addr & 0x1F) << 7;
 
 #define SID_GET_DATA() \
-  (GPIOH->IDR & 0xFF00) >> 8; \
+  (GPIOH->IDR & 0xFF00) >> 8;
 
 
 void config_init();

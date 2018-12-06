@@ -29,18 +29,18 @@
 #include "config.h"
 
 SD_HandleTypeDef g_sd_handle;
-static HAL_SD_CardInfoTypedef g_hal_sd_card_info;
+//static HAL_SD_CardInfoTypeDef g_hal_sd_card_info;
 
 void sdcard_init()
 {
     g_sd_handle.Instance = SDMMC1;
     g_sd_handle.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
-    g_sd_handle.Init.ClockBypass = SDMMC_CLOCK_BYPASS_DISABLE;
+    //g_sd_handle.Init.ClockBypass = SDMMC_CLOCK_BYPASS_DISABLE;
     g_sd_handle.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     g_sd_handle.Init.BusWide = SDMMC_BUS_WIDE_1B;
     g_sd_handle.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
     g_sd_handle.Init.ClockDiv = 0;
-    HAL_SD_Init(&g_sd_handle, &g_hal_sd_card_info);
+    HAL_SD_Init(&g_sd_handle/*, &g_hal_sd_card_info*/);
 }
 
 uint8_t sdcard_inserted()

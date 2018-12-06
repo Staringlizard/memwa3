@@ -100,6 +100,9 @@ static void sdram_start_sequence()
     /* (15.62 us x Freq) - 20 */
     /* Set the device refresh counter */
     g_sdram_handle.Instance->SDRTR |= ((uint32_t)((1292)<< 1));
+
+    /* Swap so that SDRAM can be found at 0x60000000 instead of 0xC0000000 */
+    HAL_SetFMCMemorySwappingConfig(FMC_SWAPBMAP_SDRAM_SRAM);
 }
 
 void sdram_init()

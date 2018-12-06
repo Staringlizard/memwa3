@@ -28,7 +28,7 @@
 #include "stm32h7xx_hal_flash.h"
 #include "stm32h7xx_hal_rcc.h"
 
-#define BUFFER_SIZE        512
+#define BUFFER_SIZE        256
 
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base address of Sector 0, 32 Kbytes */
 #define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08008000) /* Base address of Sector 1, 32 Kbytes */
@@ -129,59 +129,77 @@ static void jump_to_application()
 
 static void config_clks()
 {
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    __HAL_RCC_PWR_CLK_ENABLE();
-
+    /**Supply configuration update enable 
+    */
+    MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
+    /**Configure the main internal regulator output voltage 
+    */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-#ifdef USE_HSE
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
+    {
+
+    }
+    /**Macro to configure the PLL clock source 
+    */
+    __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 8;
-#else
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-    RCC_OscInitStruct.PLL.PLLM = 16;
-#endif  
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLN = 432;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 9;
-
-    HAL_RCC_OscConfig(&RCC_OscInitStruct);
-
-    HAL_PWREx_EnableOverDrive();
-
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK |
-                                  RCC_CLOCKTYPE_SYSCLK |
-                                  RCC_CLOCKTYPE_PCLK1 |
-                                  RCC_CLOCKTYPE_PCLK2;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 1;
+    RCC_OscInitStruct.PLL.PLLN = 100;
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 128;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        while(1) {;}
+    }
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
+                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
-    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC |
-                                               RCC_PERIPHCLK_I2C4 |
-                                               RCC_PERIPHCLK_SDMMC1 |
-                                               RCC_PERIPHCLK_CLK48;
-    PeriphClkInitStruct.PLLSAI.PLLSAIN = 320;
-    PeriphClkInitStruct.PLLSAI.PLLSAIR = 4;
-    PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
-    PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV8;
-    PeriphClkInitStruct.PLLSAIDivQ = 1;
-    PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
-    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_HSI;
-    PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
-    PeriphClkInitStruct.Sdmmc1ClockSelection = RCC_SDMMC1CLKSOURCE_CLK48;
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    {
+        while(1) {;}
+    }
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_SDMMC
+                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FMC;
+    PeriphClkInitStruct.PLL3.PLL3M = 2;
+    PeriphClkInitStruct.PLL3.PLL3N = 28;
+    PeriphClkInitStruct.PLL3.PLL3P = 2;
+    PeriphClkInitStruct.PLL3.PLL3Q = 2;
+    PeriphClkInitStruct.PLL3.PLL3R = 2;
+    PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2;
+    PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+    PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_D1HCLK;
+    PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+        while(1) {;}
+    }
 
     /* SysTick_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(SysTick_IRQn, 1, 1);
@@ -195,7 +213,6 @@ static void flash_file(FIL *fd_p, char *file_p)
     uint8_t buffer_p[BUFFER_SIZE];
     uint32_t bytes_read = 0;
     uint32_t read_cnt = 0;
-    uint32_t i;
 
     __set_PRIMASK(1); /* Disable interrupts */
 
@@ -212,15 +229,12 @@ static void flash_file(FIL *fd_p, char *file_p)
             while(1){;}
         }
 
-        for(i = 0; i < bytes_read; i++)
+        res_flash = HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD,
+                                      FLASH_USER_START_ADDR + read_cnt,
+                                      buffer_p);
+        if(res_flash != HAL_OK)
         {
-            res_flash = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE,
-                                          FLASH_USER_START_ADDR + read_cnt + i,
-                                          buffer_p[i]);
-            if(res_flash != HAL_OK)
-            {
-                while(1){;}
-            }
+            while(1){;}
         }
 
         read_cnt += bytes_read;
@@ -237,6 +251,8 @@ static void flash_file(FIL *fd_p, char *file_p)
 
     do
     {
+        uint32_t i;
+
         res_fs = f_read(fd_p, buffer_p, BUFFER_SIZE, (UINT *)&bytes_read);
 
         if(res_fs != FR_OK)
@@ -316,7 +332,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Mode = GPIO_MODE_INPUT;
     GPIO_Init.Pull = GPIO_PULLUP;
-    GPIO_Init.Speed = GPIO_SPEED_LOW;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
 
     GPIO_Init.Pin = GPIO_PIN_7;     /* R3 PA7 SD CD */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
@@ -352,7 +368,7 @@ int main()
     if(sdcard_inserted())
     {
         /* Check for fw and flash it if found */
-        fw_update();
+        //fw_update();
     }
 
     jump_to_application();
