@@ -31,9 +31,17 @@
 #include "tda19988.h"
 #include "disp.h"
 
+#define TDA19988        0x0301
+#define MKREG(page, addr)   (((page) << 8) | (addr))
+#define TDA_VERSION     MKREG(0x00, 0x00)
+#define TDA_VERSION_MSB     MKREG(0x00, 0x02)
+
+#define I2C_CEC_ADDRESS    0x68
+#define I2C_HDMI_ADDRESS   0xE0
+
 #define TEST_FILE               "testfile"
 #define TEST_PATTERN_REPS       1000
-#define TEST_ADV7511_WRITE_REG  0x96
+#define TEST_TDA19988_WRITE_REG  0x96
 #define TEST_SDRAM_START_ADDR   SDRAM_ADDR
 #define TEST_SDRAM_SIZE         0x800000
 #define TEST_SCREEN_WIDTH       800
@@ -64,11 +72,11 @@ typedef enum
 
 typedef enum
 {
-    DIAG_ADV7511_STATUS_OK,
-    DIAG_ADV7511_STATUS_ERROR_READ,
-    DIAG_ADV7511_STATUS_ERROR_WRITE,
-    DIAG_ADV7511_STATUS_ERROR_INITVAL
-} adv7511_status_t;
+    DIAG_TDA19988_STATUS_OK,
+    DIAG_TDA19988_STATUS_ERROR_READ,
+    DIAG_TDA19988_STATUS_ERROR_WRITE,
+    DIAG_TDA19988_STATUS_ERROR_INITVAL
+} tda19988_status_t;
 
 static sdram_status_t sdram_run()
 {
@@ -168,27 +176,33 @@ exit:
     return sdcard_status;
 }
 
-static adv7511_status_t adv7511_run()
+static tda19988_status_t tda19988_run()
 {
-    adv7511_status_t adv7511_status = DIAG_ADV7511_STATUS_OK;
+    tda19988_status_t tda19988_status = DIAG_TDA19988_STATUS_OK;
+    uint16_t version = 0;
+    uint8_t data;
 
-    /* Chip revision for AD7511w should be 0x13 according to datasheet */
-    if(adv7511_rd_reg(0x00) != 0x13)
+    data = tda19988_rd_reg(I2C_HDMI_ADDRESS,  TDA_VERSION);
+    version |= data;
+    data = tda19988_rd_reg(I2C_HDMI_ADDRESS,  TDA_VERSION_MSB);
+    version |= (data << 8);
+
+    /* Clear feature bits */
+    version = version & ~0x30;
+
+    /* Check Chip revision */
+    switch (version)
     {
-        adv7511_status = DIAG_ADV7511_STATUS_ERROR_READ;
-        goto exit;
+        case TDA19988:
+            tda19988_status = DIAG_TDA19988_STATUS_OK;
+            break;
+        default:
+            tda19988_status = DIAG_TDA19988_STATUS_ERROR_READ;
+            break;
     }
-
-    if(adv7511_rd_reg(0x01) != 0x00)
-    {
-        adv7511_status = DIAG_ADV7511_STATUS_ERROR_READ;
-        goto exit;
-    }
-
-    /* Registers can only be written if HDMI cable is inserted */
 
 exit:
-    return adv7511_status;
+    return tda19988_status;
 }
 
 static void disp_run()
@@ -234,7 +248,7 @@ diag_status_t diag_run()
 {
     diag_status_t diag_status = DIAG_STATUS_OK;
     sdram_status_t sdram_status = DIAG_SDRAM_STATUS_OK;
-    adv7511_status_t adv7511_status = DIAG_ADV7511_STATUS_OK;
+    tda19988_status_t tda19988_status = DIAG_TDA19988_STATUS_OK;
 
     /* SRAM functionality */
     sdram_status = sdram_run();
@@ -246,9 +260,9 @@ diag_status_t diag_run()
     }
 
     /* ADV7511 (I2C) functionality */
-    adv7511_status = adv7511_run();
+    tda19988_status = tda19988_run();
 
-    if(adv7511_status != DIAG_ADV7511_STATUS_OK)
+    if(tda19988_status != DIAG_TDA19988_STATUS_OK)
     {
         diag_status = DIAG_STATUS_ERROR_I2C;
         goto exit;

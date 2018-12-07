@@ -69,7 +69,7 @@ static if_keybd_map_t g_keybd_map_a[DEFAULT_KEY_MAX + 1];
 
 static FATFS g_fatfs;
 static char g_sd_path_p[] = {"0:/"};
-
+static uint8_t tmp = 0;
 int main()
 {
     FIL fd;
@@ -96,7 +96,7 @@ int main()
     {
         *(uint8_t *)(SDRAM_ADDR + i) = 0;
     }
-#if 0
+
     /* Card inserted ? */
     if(sdcard_inserted() == 0)
     {
@@ -125,7 +125,7 @@ int main()
             }
         }
     }
-#endif
+
     disp_set_memory(MEM_ADDR_BUFFER0, CC_DISP_BUFFER1_ADDR);
     disp_set_memory(MEM_ADDR_BUFFER1, CC_DISP_BUFFER2_ADDR);
     disp_set_memory(MEM_ADDR_BUFFER2, CC_DISP_BUFFER3_ADDR);

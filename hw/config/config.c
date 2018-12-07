@@ -489,18 +489,6 @@ void HAL_LED_MspInit() /* Memwa2 specific */
     HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
-HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
-{
-  /*Configure the SysTick to have interrupt in ms time basis*/
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-  /*Configure the SysTick IRQ priority */
-  HAL_NVIC_SetPriority(SysTick_IRQn, TickPriority ,0);
-
-  /* Return function status */
-  return HAL_OK;
-}
-
 static void mpu_config(void)
 {
   MPU_Region_InitTypeDef MPU_InitStruct;
