@@ -592,7 +592,7 @@ static void config_clks()
                               |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C4
                               |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FMC;
     PeriphClkInitStruct.PLL3.PLL3M = 2;
-    PeriphClkInitStruct.PLL3.PLL3N = 28;
+    PeriphClkInitStruct.PLL3.PLL3N = 20;
     PeriphClkInitStruct.PLL3.PLL3P = 2;
     PeriphClkInitStruct.PLL3.PLL3Q = 2;
     PeriphClkInitStruct.PLL3.PLL3R = 2;
@@ -647,11 +647,16 @@ static void config_joyst()
 {
     joyst_init();
 }
-
+extern tda19988_vm_t videomode_list[46];
 static void config_tda19988()
 {
+    tda19988_vm_t tda19988_vm = {0};
+
+    tda19988_vm = videomode_list[10];
+
     tda19988_init();
     tda19988_configure();
+    tda19988_init_encoder(&tda19988_vm);
 }
 
 static void config_sdram()

@@ -42,6 +42,7 @@
 #include "ff.h"
 #include "sm.h"
 #include "sdcard.h"
+#include "led.h"
 
 #define BUFFER_SIZE        0x1000
 #define DEFAULT_KEY_MAX    71
@@ -78,6 +79,8 @@ int main()
     uint32_t read_cnt = 0;
     uint32_t i;
 
+    PWR_EN_1_8V();
+
     __set_PRIMASK(0); /* Enable IRQ */
 
     HAL_Init();
@@ -87,8 +90,6 @@ int main()
     config_init();
 
     led_set(1, 0, 0);
-
-    PWR_EN_1_8V();
 
     /* Clean sdram */
     for(i = 0; i < SDRAM_SIZE; i++)

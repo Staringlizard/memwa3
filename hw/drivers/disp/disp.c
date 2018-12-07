@@ -64,23 +64,23 @@ static uint32_t clut_a[CLUT_MAX] =
 {
     0x000000, /* black */
     0xFFFFFF, /* white */
-    0x744335, /* red */
-    0x7CACBA, /* cyan */
-    0x7B4890, /* violet */
-    0x64974F, /* green */
-    0x403285, /* blue */
-    0xBFCD7A, /* yellow */
-    0x7B5B2F, /* orange */
-    0x4f4500, /* brown */
-    0xa37265, /* light red */
+    0x354374, /* red */
+    0xBAAC7C, /* cyan */
+    0x90487B, /* violet */
+    0x4F9764, /* green */
+    0x853240, /* blue */
+    0x7ACDBF, /* yellow */
+    0x2F5B7B, /* orange */
+    0x00454f, /* brown */
+    0x6572a3, /* light red */
     0x505050, /* grey 1 */
     0x787878, /* grey 2 */
-    0xa4d78e, /* light green */
-    0x786abd, /* light blue */
+    0x8ed7a4, /* light green */
+    0xbd6a78, /* light blue */
     0x9f9f9f, /* grey 3 */
-    0x010211, /* text background */
-    0x8f9fed, /* text forground */
-    0x151bfb, /* marker */
+    0x110201, /* text background */
+    0xed9f8f, /* text forground */
+    0xfb1b15, /* marker */
 };
 
 void disp_init(disp_mode_t disp_mode)
@@ -127,10 +127,10 @@ void disp_init(disp_mode_t disp_mode)
             g_ltdc_handle.Init.Backcolor.Red = 0;
 
             /* Polarity */
-            g_ltdc_handle.Init.HSPolarity = LTDC_HSPOLARITY_AL;
-            g_ltdc_handle.Init.VSPolarity = LTDC_VSPOLARITY_AL; 
-            g_ltdc_handle.Init.DEPolarity = LTDC_DEPOLARITY_AL;  
-            g_ltdc_handle.Init.PCPolarity = LTDC_PCPOLARITY_IIPC;
+            g_ltdc_handle.Init.HSPolarity = LTDC_HSPOLARITY_AH;
+            g_ltdc_handle.Init.VSPolarity = LTDC_VSPOLARITY_AH; 
+            g_ltdc_handle.Init.DEPolarity = LTDC_DEPOLARITY_AH;
+            g_ltdc_handle.Init.PCPolarity = LTDC_PCPOLARITY_IIPC;//LTDC_PCPOLARITY_IPC;//LTDC_PCPOLARITY_IIPC;
             g_ltdc_handle.Instance = LTDC;
     }
 
