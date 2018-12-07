@@ -529,7 +529,7 @@ void sm_init()
     g_disk_drive_on = 0;
     g_lock_freq_pal = 0;
     g_disp_info = 0;
-    g_limit_frame_rate = 0;
+    g_limit_frame_rate = 1;
     g_tape_play = 0;
     g_if_cc_emu.if_emu_cc_display.display_lock_frame_rate_fp(g_lock_freq_pal);
     g_if_cc_emu.if_emu_cc_display.display_limit_frame_rate_fp(g_limit_frame_rate);

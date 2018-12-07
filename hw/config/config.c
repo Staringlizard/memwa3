@@ -148,11 +148,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     GPIO_InitTypeDef GPIO_Init;
     RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInit;
 
-    /* Configure the I2C clock source */
-    RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
-    RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
-
     /* Enable GPIOs clock */
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
@@ -541,8 +536,11 @@ static void config_clks()
     /**Supply configuration update enable 
     */
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
-    /**Configure the main internal regulator output voltage 
-    */
+
+
+    /* The voltage scaling allows optimizing the power consumption when the device is
+     clocked below the maximum system frequency, to update the voltage scaling value
+     regarding system frequency refer to product datasheet.  */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
     while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
@@ -608,6 +606,15 @@ static void config_clks()
     {
         while(1) {;}
     }
+
+    /* Activate CSI clock mondatory for I/O Compensation Cell */
+    __HAL_RCC_CSI_ENABLE();
+
+    /* Enable SYSCFG clock mondatory for I/O Compensation Cell */
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+
+    /* Enables the I/O Compensation Cell */
+    HAL_EnableCompensationCell();
 
     /* SysTick_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(SysTick_IRQn, 1, 1);
