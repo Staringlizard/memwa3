@@ -88,6 +88,8 @@ int main()
 
     led_set(1, 0, 0);
 
+    PWR_EN_1_8V();
+
     /* Clean sdram */
     for(i = 0; i < SDRAM_SIZE; i++)
     {

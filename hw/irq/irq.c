@@ -44,7 +44,7 @@
 #include "sidbus.h"
 #include "joyst.h"
 #include "timer.h"
-#include "adv7511.h"
+#include "tda19988.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -389,7 +389,7 @@ void EXTI15_10_IRQHandler(void)
   else if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
   {
     __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_PIN_15);
-    adv7511_irq();
+    tda19988_irq();
   }
 }
 

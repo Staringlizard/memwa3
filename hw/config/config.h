@@ -75,6 +75,11 @@
 #define LED_SET_B1_LOW() \
   GPIOC->BSRRH = GPIO_PIN_15;
 
+#define PWR_DIS_1_8V() \
+  GPIOA->BSRRH = GPIO_PIN_9;
+
+#define PWR_EN_1_8V() \
+  GPIOA->BSRRL = GPIO_PIN_9;
 
 void config_init();
 

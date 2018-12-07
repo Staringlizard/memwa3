@@ -29,7 +29,7 @@
  */
 
 #include "console.h"
-#include "adv7511.h"
+#include "tda19988.h"
 #include "usbd_core.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
@@ -46,17 +46,21 @@ extern USBD_CDC_ItfTypeDef  USBD_CDC_fops;
 
 typedef enum
 {
-    CMD_I2C_READ,
-    CMD_I2C_WRITE,
+    CMD_I2C_CEC_READ,
+    CMD_I2C_CEC_WRITE,
+    CMD_I2C_HDMI_READ,
+    CMD_I2C_HDMI_WRITE,
     CMD_MEM_READ,
     CMD_MEM_WRITE,
     CMD_MAX
 } cmd_t;
 
-static char *g_cmd_list_ap[5] = {"i2c_read", "i2c_write", "mem_read", "mem_write", NULL};
+static char *g_cmd_list_ap[CMD_MAX+1] = {"i2c_cec_read", "i2c_cec_write", "i2c_hdmi_read", "i2c_hdmi_write", "mem_read", "mem_write", NULL};
 
-static char *g_console_help_p =   "[i2c_read <reg>], read adv7511 register\r" \
-                                "[i2c_write <reg> <val>], write adv7511 register\r" \
+static char *g_console_help_p =   "[i2c_cec_read <reg>], read tda19988 register\r" \
+                                "[i2c_cec_write <reg> <val>], write tda19988 register\r" \
+                                "[i2c_hdmi_write <reg>], read tda19988 register\r" \
+                                "[i2c_hdmi_write <reg> <val>], write tda19988 register\r" \
                                 "[mem_read <addr>], read memory address\r" \
                                 "[mem_write <addr> <val>], write to memory address\n";
 static uint8_t g_cmd_input_str_a[128] = "";
@@ -103,24 +107,33 @@ static void console_interpret(uint8_t *buf, uint32_t len)
 
     switch(cmd)
     {
-        case CMD_I2C_READ:
+        case CMD_I2C_CEC_READ:
+        case CMD_I2C_HDMI_READ:
         {
-            uint8_t reg;
-            uint8_t val;
+            uint8_t reg = 0xFF;
+            uint8_t val = 0xFF;
             if(argsv_pp[1] == NULL)
             {
                 printf("need one argument!\n");
                 break;
             }
             reg = console_atoi(argsv_pp[1]);
-            val = adv7511_rd_reg(reg);
+            if(cmd == CMD_I2C_CEC_READ)
+            {
+                val = tda19988_rd_reg(TDA19988_ADDR_CEC, reg);
+            }
+            else
+            {
+                val = tda19988_rd_reg(TDA19988_ADDR_HDMI, reg);
+            }
             printf("reading 0x%02X from register 0x%02X\n", val, reg);
         }
         break;
-        case CMD_I2C_WRITE:
+        case CMD_I2C_HDMI_WRITE:
+        case CMD_I2C_CEC_WRITE:
         {
-            uint8_t reg;
-            uint8_t val;
+            uint8_t reg = 0xFF;
+            uint8_t val = 0xFF;
             if(argsv_pp[1] == NULL || argsv_pp[2] == NULL)
             {
                 printf("need two arguments!\n");
@@ -128,7 +141,14 @@ static void console_interpret(uint8_t *buf, uint32_t len)
             }
             reg = console_atoi(argsv_pp[1]);
             val = console_atoi(argsv_pp[2]);
-            adv7511_wr_reg(reg, val);
+            if(cmd == CMD_I2C_CEC_WRITE)
+            {
+                tda19988_wr_reg(TDA19988_ADDR_CEC, reg, val);
+            }
+            else
+            {
+                tda19988_wr_reg(TDA19988_ADDR_HDMI, reg, val);
+            }
             printf("writing 0x%02X to register 0x%02X\n", val, reg);
         }
         break;

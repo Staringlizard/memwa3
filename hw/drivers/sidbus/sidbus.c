@@ -45,7 +45,7 @@ sidbus_state_t g_sidbus_state;
  * slightly different. Performace impact for busy
  * wait in this case will be very low.
  */
-volatile static write_lock_t g_lock;
+volatile static write_lock_t g_lock = WRITE_UNLOCKED;
 
 __weak void HAL_SIDBUS_MspInit()
 {
@@ -83,7 +83,7 @@ void sidbus_init()
 void sidbus_write(uint8_t addr, uint8_t value)
 {
     /* Wait until previous write is complete */
-    while(g_lock == WRITE_LOCKED) {;}
+    //while(g_lock == WRITE_LOCKED) {;}
 
     /* Lock write */
     g_lock = WRITE_LOCKED;

@@ -39,7 +39,7 @@
 #include "stm32h7xx_hal_flash.h"
 #include "sdcard.h"
 #include "sdram.h"
-#include "adv7511.h"
+#include "tda19988.h"
 #include "console.h"
 #include "keybd.h"
 #include "disp.h"
@@ -149,9 +149,9 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInit;
 
     /* Configure the I2C clock source */
-    //RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
-    //RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
-    //HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
+    RCC_PeriphCLKInit.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
+    RCC_PeriphCLKInit.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
+    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInit);
 
     /* Enable GPIOs clock */
     __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -169,7 +169,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     HAL_GPIO_Init(GPIOD, &GPIO_Init);
 }
 
-void HAL_ADV7511_MspInit() /* Memwa2 specific */
+void HAL_TDA19988_MspInit() /* Memwa2 specific */
 {
     GPIO_InitTypeDef GPIO_Init;
 
@@ -185,6 +185,14 @@ void HAL_ADV7511_MspInit() /* Memwa2 specific */
     /* Enable and set interrupt for adv7511 */
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 1);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+    /* Enable 1.8 Volt */
+    GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_Init.Pull = GPIO_PULLUP;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
+
+    GPIO_Init.Pin = GPIO_PIN_9; /* E15 PA9 1.8V_EN */
+    HAL_GPIO_Init(GPIOA, &GPIO_Init);
 }
 
 void HAL_SDRAM_MspInit(SDRAM_HandleTypeDef *hsdram)
@@ -363,6 +371,15 @@ void HAL_SIDBUS_MspInit() /* Memwa2 specific */
     __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOI_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    /* Enable sid clk */
+    GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_Init.Pull = GPIO_PULLUP;
+    GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
+
+    GPIO_Init.Pin = GPIO_PIN_8; /* F15 PA8 SID_CLK_EN */
+    HAL_GPIO_Init(GPIOA, &GPIO_Init);
 
     GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
@@ -471,9 +488,9 @@ void HAL_LED_MspInit() /* Memwa2 specific */
     GPIO_Init.Pull = GPIO_PULLUP;
     GPIO_Init.Speed = GPIO_SPEED_FREQ_LOW;
 
-    GPIO_Init.Pin = GPIO_PIN_13 |    /* LED_R1 */
-                    GPIO_PIN_14 |    /* LED_G1 */
-                    GPIO_PIN_15;     /* LED_B1 */
+    GPIO_Init.Pin = GPIO_PIN_13 |    /* D1 PC13 LED_R1 */
+                    GPIO_PIN_14 |    /* E1 PC14 LED_G1 */
+                    GPIO_PIN_15;     /* F1 PC15 LED_B1 */
     HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
@@ -631,10 +648,10 @@ static void config_joyst()
     joyst_init();
 }
 
-static void config_adv7511()
+static void config_tda19988()
 {
-    adv7511_init();
-    //adv7511_configure();
+    tda19988_init();
+    tda19988_configure();
 }
 
 static void config_sdram()
@@ -678,7 +695,7 @@ void config_init()
     config_sidbus();
     config_timer();
     config_joyst();
-    config_adv7511();
+    config_tda19988();
     config_console();
     config_keybd();
     config_disp();

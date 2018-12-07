@@ -28,7 +28,7 @@
 
 #include "diag.h"
 #include "ff.h"
-#include "adv7511.h"
+#include "tda19988.h"
 #include "disp.h"
 
 #define TEST_FILE               "testfile"
