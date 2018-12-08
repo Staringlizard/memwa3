@@ -81,6 +81,12 @@
 #define PWR_EN_1_8V() \
   GPIOA->BSRRL = GPIO_PIN_9;
 
+#define PWR_EN_SID_CLK() \
+  GPIOA->BSRRL = GPIO_PIN_8;
+
+#define PWR_DIS_SID_CLK() \
+  GPIOA->BSRRH = GPIO_PIN_8;
+
 void config_init();
 
 #endif

@@ -85,6 +85,8 @@ static uint32_t clut_a[CLUT_MAX] =
 
 void disp_init(disp_mode_t disp_mode)
 {
+    led_toggle_limit_green(0);
+
     switch(disp_mode)
     {
         case DISP_MODE_VGA:
@@ -115,11 +117,11 @@ void disp_init(disp_mode_t disp_mode)
             g_ltdc_handle.Init.HorizontalSync = (SVGA_HSYNC - 1);
             g_ltdc_handle.Init.VerticalSync = (SVGA_VSYNC - 1);
             g_ltdc_handle.Init.AccumulatedHBP = (SVGA_HSYNC + SVGA_HBP - 1);
-            g_ltdc_handle.Init.AccumulatedVBP = (SVGA_VSYNC + SVGA_VBP - 1);  
+            g_ltdc_handle.Init.AccumulatedVBP = (SVGA_VSYNC + SVGA_VBP - 1);
             g_ltdc_handle.Init.AccumulatedActiveH = (SVGA_HEIGHT + SVGA_VSYNC + SVGA_VBP - 1);
             g_ltdc_handle.Init.AccumulatedActiveW = (SVGA_WIDTH + SVGA_HSYNC + SVGA_HBP - 1);
             g_ltdc_handle.Init.TotalHeigh = (SVGA_HEIGHT + SVGA_VSYNC + SVGA_VBP + SVGA_VFP - 1);
-            g_ltdc_handle.Init.TotalWidth = (SVGA_WIDTH + SVGA_HSYNC + SVGA_HBP + SVGA_HFP - 1); 
+            g_ltdc_handle.Init.TotalWidth = (SVGA_WIDTH + SVGA_HSYNC + SVGA_HBP + SVGA_HFP - 1);
 
             /* Background value */
             g_ltdc_handle.Init.Backcolor.Blue = 0;
@@ -128,9 +130,9 @@ void disp_init(disp_mode_t disp_mode)
 
             /* Polarity */
             g_ltdc_handle.Init.HSPolarity = LTDC_HSPOLARITY_AH;
-            g_ltdc_handle.Init.VSPolarity = LTDC_VSPOLARITY_AH; 
+            g_ltdc_handle.Init.VSPolarity = LTDC_VSPOLARITY_AH;
             g_ltdc_handle.Init.DEPolarity = LTDC_DEPOLARITY_AH;
-            g_ltdc_handle.Init.PCPolarity = LTDC_PCPOLARITY_IIPC;//LTDC_PCPOLARITY_IPC;//LTDC_PCPOLARITY_IIPC;
+            g_ltdc_handle.Init.PCPolarity = LTDC_PCPOLARITY_IIPC;
             g_ltdc_handle.Instance = LTDC;
     }
 
@@ -238,6 +240,8 @@ void disp_flip_buffer(uint8_t **done_buffer_pp)
     {
         *done_buffer_pp = (uint8_t *)g_memory_addr_a[MEM_ADDR_BUFFER1];
     }
+
+    led_toggle_green();
 }
 
 void disp_set_clut_table(uint32_t *clut_p)

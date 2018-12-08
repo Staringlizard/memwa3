@@ -191,6 +191,8 @@ void HAL_TDA19988_MspInit() /* Memwa2 specific */
 
     GPIO_Init.Pin = GPIO_PIN_9; /* E15 PA9 1.8V_EN */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
+
+    PWR_EN_1_8V();
 }
 
 void HAL_SDRAM_MspInit(SDRAM_HandleTypeDef *hsdram)
@@ -270,9 +272,6 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef *hltdc)
 
     /* Enable the LTDC and DMA2D clocks */
     __HAL_RCC_LTDC_CLK_ENABLE();
-
-    /* No worries, it will be enabled by hal again */
-    //__HAL_LTDC_DISABLE(hltdc);
 
     /* Enable GPIOs clock */
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -378,6 +377,8 @@ void HAL_SIDBUS_MspInit() /* Memwa2 specific */
 
     GPIO_Init.Pin = GPIO_PIN_8; /* F15 PA8 SID_CLK_EN */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
+
+    PWR_EN_SID_CLK();
 
     GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_Init.Pull = GPIO_NOPULL;
@@ -669,7 +670,7 @@ static void config_joyst()
 {
     joyst_init();
 }
-extern tda19988_vm_t videomode_list[46];
+extern tda19988_vm_t videomode_list[];
 static void config_tda19988()
 {
     tda19988_vm_t tda19988_vm = {0};

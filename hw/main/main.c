@@ -79,8 +79,6 @@ int main()
     uint32_t read_cnt = 0;
     uint32_t i;
 
-    PWR_EN_1_8V();
-
     __set_PRIMASK(0); /* Enable IRQ */
 
     HAL_Init();
@@ -88,8 +86,6 @@ int main()
     HAL_Delay(200);
 
     config_init();
-
-    led_set(1, 0, 0);
 
     /* Clean sdram */
     for(i = 0; i < SDRAM_SIZE; i++)

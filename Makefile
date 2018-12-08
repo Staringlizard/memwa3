@@ -2,13 +2,13 @@ ARCH_FLAGS=-mcpu=cortex-m7
 CC = arm-none-eabi-gcc
 AR = arm-none-eabi-gcc-ar
 
-BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -g -c -DSTM32H743xx
-BL_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -g -Wl,-Map=./out_bl/bl.map,--gc-section,-T ./link.ld
+BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -flto -Ofast -c -DSTM32H743xx
+BL_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -flto -Ofast -Wl,-Map=./out_bl/bl.map,--gc-section,-T ./link.ld
 
 # NOTE: If building bootloader then change to ORIGIN = 0x08000000 in link.ld
 # and also change the vector tables in system_stm32h7xx.c to 0x00000 (VECT_TAB_OFFSET).
-TARGET_CFLAGS = $(ARCH_FLAGS) $(TARGET_INCLUDES) -mthumb -Wall -static -ffunction-sections -g -c -DSTM32H743xx
-TARGET_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -g -Wl,-Map=./out_target/target.map,--gc-section,-T ./link.ld
+TARGET_CFLAGS = $(ARCH_FLAGS) $(TARGET_INCLUDES) -mthumb -Wall -static -ffunction-sections -flto -Ofast -c -DSTM32H743xx
+TARGET_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -flto -Ofast -Wl,-Map=./out_target/target.map,--gc-section,-T ./link.ld
 
 BL_INCLUDES := \
 	-I./if \

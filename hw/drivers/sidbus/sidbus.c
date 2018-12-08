@@ -73,6 +73,7 @@ void sidbus_irq()
 
 void sidbus_init()
 {
+    led_toggle_limit_blue(10);
     HAL_SIDBUS_MspInit();
     SID_SET_CS_HIGH();
 
@@ -83,7 +84,7 @@ void sidbus_init()
 void sidbus_write(uint8_t addr, uint8_t value)
 {
     /* Wait until previous write is complete */
-    //while(g_lock == WRITE_LOCKED) {;}
+    while(g_lock == WRITE_LOCKED) {;}
 
     /* Lock write */
     g_lock = WRITE_LOCKED;
@@ -93,6 +94,8 @@ void sidbus_write(uint8_t addr, uint8_t value)
 
     /* Enable sidbus IRQ */
     EXTI->FTSR1 |= GPIO_PIN_13;
+
+    led_toggle_blue();
 }
 
 uint8_t sidbus_read(uint8_t addr)
