@@ -88,6 +88,9 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
     GPIO_Init.Pin = GPIO_PIN_7;     /* R3 PA7 SD CD */
     HAL_GPIO_Init(GPIOA, &GPIO_Init);
+
+    __HAL_RCC_SDMMC1_FORCE_RESET();
+    __HAL_RCC_SDMMC1_RELEASE_RESET();
 }
 
 void  HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
@@ -521,25 +524,49 @@ static void config_clks()
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    /**Supply configuration update enable 
-    */
+    /*
+     * Supply configuration update enable
+     */
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
 
 
-    /* The voltage scaling allows optimizing the power consumption when the device is
-     clocked below the maximum system frequency, to update the voltage scaling value
-     regarding system frequency refer to product datasheet.  */
+    /*
+     * The voltage scaling allows optimizing the power consumption when the device is
+     * clocked below the maximum system frequency, to update the voltage scaling value
+     * regarding system frequency refer to product datasheet.
+     */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
-    {
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {;}
 
-    }
-    /**Macro to configure the PLL clock source 
-    */
     __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+
+    /* 
+     * Initializes the CPU, AHB and APB busses clocks 
+     *
+     * Below givs:
+     * SysClk:      400Mhz
+     * CPU1:        400Mhz
+     * CPU2:        200Mhz
+     * AXI:         200Mhz
+     * HCLK3:       200Mhz
+     * APB3:        100Mhz
+     * AHB 1,2:     200Mhz
+     * APB1:        100Mhz
+     * APB1 Timer:  200Mhz
+     * APB2:        100Mhz
+     * APB2 Timer:  200Mhz
+     * AHB4:        200Mhz
+     * APB4:        100Mhz
+     *
+     * RNG:         48Mhz
+     * I2C4:        100Mhz
+     * FMC:         200Mhz
+     * LTDC:        40Mhz
+     * SDMMC:       200Mhz
+     * USB:         48Mhz
+     */
+
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
@@ -548,7 +575,7 @@ static void config_clks()
     RCC_OscInitStruct.PLL.PLLM = 1;
     RCC_OscInitStruct.PLL.PLLN = 100;
     RCC_OscInitStruct.PLL.PLLP = 2;
-    RCC_OscInitStruct.PLL.PLLQ = 128;
+    RCC_OscInitStruct.PLL.PLLQ = 4;
     RCC_OscInitStruct.PLL.PLLR = 2;
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -557,8 +584,7 @@ static void config_clks()
     {
         while(1) {;}
     }
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
@@ -574,6 +600,7 @@ static void config_clks()
     {
         while(1) {;}
     }
+
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_RNG
                               |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C4
                               |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FMC;

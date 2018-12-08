@@ -214,7 +214,7 @@ void DMA2_Stream6_IRQHandler(void)
   */
 void SDMMC1_IRQHandler(void)
 {
-  ;//SD_IRQHandler();
+  //SD_IRQHandler();
 }
 
 /**
