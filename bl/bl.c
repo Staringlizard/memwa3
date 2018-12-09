@@ -22,7 +22,7 @@
 
 
 #include "bl.h"
-#include "disp.h"
+#include "ltdc.h"
 #include "sdcard.h"
 #include "ff.h"
 #include "stm32h7xx_hal_flash.h"
@@ -362,10 +362,10 @@ int main()
     HAL_Init();
     HAL_Delay(200);
     config_clks();
-    sdcard_init();
+    drv_sdcard_init();
 
     /* Card inserted ? */
-    if(sdcard_inserted())
+    if(drv_sdcard_inserted())
     {
         /* Check for fw and flash it if found */
         //fw_update();

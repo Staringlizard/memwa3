@@ -369,4 +369,7 @@ typedef struct
     if_host_ee_t if_host_ee;
 } if_host_t;
 
+extern if_emu_cc_t g_if_cc_emu;
+extern if_emu_dd_t g_if_dd_emu;
+
 #endif
