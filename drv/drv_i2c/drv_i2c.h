@@ -28,11 +28,22 @@
 #include "stm32h7xx_hal.h"
 #include "dev_term.h"
 
-void drv_i2c_init();
-void drv_i2c_wr_reg(uint8_t addr, uint8_t reg, uint8_t val);
-void drv_i2c_wr_reg2(uint8_t addr, uint8_t reg, uint8_t *val);
-uint8_t drv_i2c_rd_reg(uint8_t addr, uint8_t reg);
-void drv_i2c_set_reg(uint8_t addr, uint8_t reg, uint8_t bits_to_set);
-void drv_i2c_clear_reg(uint8_t addr, uint8_t reg, uint8_t bits_to_clear);
+typedef enum
+{
+	I2C_STATUS_OK,
+	I2C_STATUS_ERROR
+} i2c_status_t;
+
+typedef enum
+{
+	I2C_OP_SET,
+	I2C_OP_CLEAR
+} i2c_op_t;
+
+i2c_status_t drv_i2c_init();
+i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val);
+i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val);
+i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value);
+i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, i2c_op_t op);
 
 #endif

@@ -226,19 +226,19 @@ void if_host_print(char *string_p, print_type_t print_type)
     switch(print_type)
     {
     case PRINT_TYPE_INFO:
-        printf("[INFO] %s\n", string_p);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, "%s\n", string_p);
         break;
     case PRINT_TYPE_WARNING:
-        printf("[WARN] %s\n", string_p);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "%s\n", string_p);
         break;
     case PRINT_TYPE_ERROR:
-        printf("[ERR] %s\n", string_p);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "%s\n", string_p);
         stage_set_message(string_p);
         stage_draw_info(INFO_PRINT, 0);
         sm_error_occured();
         break;
     case PRINT_TYPE_DEBUG:
-        printf("[DEBUG] %s\n", string_p);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, "%s\n", string_p);
         break;
     }
 }

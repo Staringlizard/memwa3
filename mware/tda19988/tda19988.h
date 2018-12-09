@@ -1,5 +1,5 @@
 /*
- * memwa2 tda19988 driver
+ * memwa3 tda19988 driver
  *
  * Copyright (c) 2016 Mathias Edman <mail@dicetec.com>
  *

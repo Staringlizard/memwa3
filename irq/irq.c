@@ -247,9 +247,6 @@ void OTG_FS_IRQHandler(void)
 void OTG_HS_IRQHandler(void)
 {
   HAL_HCD_IRQHandler(&hhcd);
-
-  /* Flush the outgoing printf data */
-  CDC_Itf_Flush();
 }
 
 void EXTI2_IRQHandler(void)

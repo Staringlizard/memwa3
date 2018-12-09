@@ -398,7 +398,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 {
   __IO USBH_StatusTypeDef status = USBH_FAIL;
   uint8_t idx = 0;
-  
+
   switch (phost->gState)
   {
   case HOST_IDLE :
