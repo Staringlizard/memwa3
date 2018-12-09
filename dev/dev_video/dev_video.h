@@ -25,8 +25,9 @@
 #define _DEV_VIDEO_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 #include <stdio.h>
 
-void video_init();
+void dev_video_init();
 
 #endif

@@ -31,7 +31,7 @@ BL_INCLUDES := \
 	-I./drv/drv_usbh \
 	-I./drv/drv_joyst \
 	-I./drv/drv_led \
-	-I./drv/drv_clk \
+	-I./config \
 	-I./mware/fatfs \
 	-I./mware/usb_host/core \
 	-I./mware/usb_host/hid \
@@ -92,7 +92,7 @@ TARGET_INCLUDES := \
 	-I./drv/drv_usbh \
 	-I./drv/drv_joyst \
 	-I./drv/drv_led \
-	-I./drv/drv_clk \
+	-I./config \
 	-I./drv/drv_i2c \
 	-I./mware/fatfs \
 	-I./mware/usb_host/core \
@@ -127,7 +127,7 @@ TARGET_LINK_FILES := \
 	./out_target/tda19988.o \
 	./out_target/drv_ltdc.o \
 	./out_target/drv_i2c.o \
-	./out_target/drv_clk.o \
+	./out_target/config.o \
 	./out_target/dev_term.o \
 	./out_target/stage.o \
 	./out_target/diag.o \
@@ -193,9 +193,9 @@ all: $(TARGET)
 $(BL):
 	@mkdir ./out_bl 2>/dev/null; true
 	@echo Compiling bootloader...
-	$(CC) $(BL_CFLAGS) -o out_bl/sdcard.o ./drv/drv_sdcard/sdcard.c
+	$(CC) $(BL_CFLAGS) -o out_bl/sdcard.o ./drv/drv_sdcard/drv_sdcard.c
 	$(CC) $(BL_CFLAGS) -o out_bl/diskio.o ./drv/drv_sdcard/diskio.c
-	$(CC) $(BL_CFLAGS) -o out_bl/ltdc.o ./drv/drv_ltdc/ltdc.c
+	$(CC) $(BL_CFLAGS) -o out_bl/ltdc.o ./drv/drv_ltdc/drv_ltdc.c
 	$(CC) $(BL_CFLAGS) -o out_bl/system_stm32h7xx.o ./cmsis_boot/system_stm32h7xx.c
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_sd.o ./hal/stm32h7xx_hal_sd.c
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal.o ./hal/stm32h7xx_hal.c
@@ -242,7 +242,7 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/tda19988.o ./mware/tda19988/tda19988.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_ltdc.o ./drv/drv_ltdc/drv_ltdc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_i2c.o ./drv/drv_i2c/drv_i2c.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/drv_clk.o ./drv/drv_clk/drv_clk.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/config.o ./config/config.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/dev_term.o ./dev/dev_term/dev_term.c
 	$(CC) $(TARGET_CFLAGS) -DSCREEN_X2 -o out_target/stage.o ./app/stage.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/diag.o ./diag/diag.c

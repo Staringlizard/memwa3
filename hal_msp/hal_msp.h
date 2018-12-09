@@ -25,11 +25,12 @@
 #define _HAL_MSP_H
 
 #include "stm32h7xx_hal_dma.h"
+#include "stm32h7xx_hal_gpio.h"
 #include "stm32h7xx_hal_sd.h"
 #include "stm32h7xx_hal_hcd.h"
 #include "stm32h7xx_hal_i2c.h"
 #include "stm32h7xx_hal_sdram.h"
-#include "main.h"
+#include "dev_term.h"
 
 #define SDCARD_CD_PIN   GPIO_PIN_7
 #define SDCARD_CD_PORT  GPIOA   

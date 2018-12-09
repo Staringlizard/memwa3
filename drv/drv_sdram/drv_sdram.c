@@ -135,7 +135,7 @@ void drv_sdram_init()
     ret = HAL_SDRAM_Init(&g_sdram_handle, &g_fmc_sdram_timing);
     if(ret != HAL_OK)
     {
-        main_error("Failed to initialize sdram!", __FILE__, __LINE__, ret);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize sdram!", __FILE__, __LINE__, ret);
     }
 
     run_start_sequence();

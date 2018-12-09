@@ -24,7 +24,7 @@
 #include "if.h"
 #include "hal_msp.h"
 
-void misc_init()
+void dev_misc_init()
 {
     drv_led_init();
     drv_crc_init();

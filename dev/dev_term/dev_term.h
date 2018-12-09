@@ -24,8 +24,44 @@
 #ifndef _DEV_TERM_H
 #define _DEV_TERM_H
 
-#include "main.h"
+#include "stm32h7xx_hal.h"
+#include <string.h>
 
-void term_init();
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define dev_term_printf(type, string, args...) \
+	switch(type) \
+	{ \
+		case DEV_TERM_PRINT_TYPE_INFO: \
+			printf("I[%s:%d]: ", __FILENAME__, __LINE__); \
+			break; \
+		case DEV_TERM_PRINT_TYPE_WARNING: \
+			printf("W[%s:%d]: ", __FILENAME__, __LINE__); \
+			break; \
+		case DEV_TERM_PRINT_TYPE_ERROR: \
+			printf("E[%s:%d]: ", __FILENAME__, __LINE__); \
+			break; \
+		case DEV_TERM_PRINT_TYPE_DEBUG: \
+			printf("D[%s:%d]: ", __FILENAME__, __LINE__); \
+			break; \
+	} \
+	printf(string, ##args); \
+	printf("\n");
+
+	    /*stage_set_message(string_p);
+	    if(sm_get_state() == SM_STATE_EMULATOR && sm_get_ltdc_stats_flag())
+	    {
+	        stage_draw_info(INFO_PRINT, 0   );
+	    }*/
+
+typedef enum
+{
+	DEV_TERM_PRINT_TYPE_INFO,
+	DEV_TERM_PRINT_TYPE_WARNING,
+	DEV_TERM_PRINT_TYPE_ERROR,
+	DEV_TERM_PRINT_TYPE_DEBUG
+} dev_term_print_type_t;
+
+void dev_term_init();
 
 #endif

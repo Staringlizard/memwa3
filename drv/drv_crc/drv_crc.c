@@ -53,7 +53,7 @@ void drv_crc_init()
     ret = HAL_CRC_Init(&g_crc_handle_type);
     if(ret != HAL_OK)
     {
-        main_error("Failed to initialize CRC!", __FILE__, __LINE__, ret);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize CRC!", __FILE__, __LINE__, ret);
     }
 }
 

@@ -26,6 +26,7 @@
 
 #include "stm32h7xx_hal.h"
 #include "drv_sdram.h"
+#include "dev_term.h"
 #include <stdio.h>
 
 #define CC_DISP_BUFFER1_ADDR   (SDRAM_ADDR)
@@ -61,6 +62,6 @@
 
 #define DD_DOS_LOAD_ADDR       0x0000C000
 
-void mem_init();
+void dev_mem_init();
 
 #endif

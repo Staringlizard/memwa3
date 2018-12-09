@@ -25,7 +25,7 @@
 #define _DRV_LTDC_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
 #define MEM_ADDR_BUFFER0    0
 #define MEM_ADDR_BUFFER1    1

@@ -31,6 +31,8 @@
 #include "dev_term.h"
 #include "drv_i2c.h"
 #include "tda19988.h"
+#include "stage.h"
+#include "sm.h"
 #include "usbd_core.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
@@ -80,7 +82,7 @@ static uint32_t term_atoi(char *str_p)
     }
 }
 
-static void term_interpret(uint8_t *buf, uint32_t len)
+static void interpret(uint8_t *buf, uint32_t len)
 {
     char *argsv_pp[16];
     uint8_t argsc = 0;
@@ -189,7 +191,7 @@ static void term_interpret(uint8_t *buf, uint32_t len)
     }
 }
 
-static void term_receive(uint8_t *buf, uint32_t len)
+static void receive(uint8_t *buf, uint32_t len)
 {
     uint8_t i;
 
@@ -221,7 +223,7 @@ static void term_receive(uint8_t *buf, uint32_t len)
             }
 
             /* Interpret the command */
-            term_interpret(g_cmd_input_str_a, g_cmd_input_cnt);
+            interpret(g_cmd_input_str_a, g_cmd_input_cnt);
             memset(g_cmd_input_str_a, 0x00, 128);
             g_cmd_input_cnt = 0;
             return;
@@ -232,7 +234,7 @@ static void term_receive(uint8_t *buf, uint32_t len)
     CDC_Itf_Send((uint8_t *)buf, len);
 }
 
-void term_init()
+void dev_term_init()
 {
   /* Init Device Library */
   USBD_Init(&g_usbd_device, &VCP_Desc, 0);
@@ -250,7 +252,7 @@ void term_init()
   HAL_PWREx_EnableUSBVoltageDetector();
 
   /* Register receive function */
-  CDC_Iif_RegisterReceiveCb(term_receive);
+  CDC_Iif_RegisterReceiveCb(receive);
 
   memset(g_cmd_input_str_a, 0x00, 128);
 }

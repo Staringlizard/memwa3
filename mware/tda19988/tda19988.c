@@ -415,7 +415,7 @@ static int tda19988_wr_reg2(uint8_t addr, uint16_t address, uint16_t data)
     if (sc_current_page != REGPAGE(address))
         tda19988_set_page(REGPAGE(address));
 
-    /*result = */drv_i2c_wr_reg(addr, cmd[0], cmd[1]);
+    /*result = */drv_i2c_wr_reg2(TDA19988_ADDR_HDMI, cmd[0], &cmd[1]);
     /*if (result)
         printf("tda19988_reg_write2 failed: %d\n", result);*/
 

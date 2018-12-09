@@ -28,7 +28,7 @@
 
 extern tda19988_vm_t videomode_list[];
 
-void video_init()
+void dev_video_init()
 {
     tda19988_vm_t tda19988_vm = {0};
     tda19988_vm = videomode_list[10];

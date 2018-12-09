@@ -26,9 +26,11 @@
 #define _DRV_I2C_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 
 void drv_i2c_init();
 void drv_i2c_wr_reg(uint8_t addr, uint8_t reg, uint8_t val);
+void drv_i2c_wr_reg2(uint8_t addr, uint8_t reg, uint8_t *val);
 uint8_t drv_i2c_rd_reg(uint8_t addr, uint8_t reg);
 void drv_i2c_set_reg(uint8_t addr, uint8_t reg, uint8_t bits_to_set);
 void drv_i2c_clear_reg(uint8_t addr, uint8_t reg, uint8_t bits_to_clear);

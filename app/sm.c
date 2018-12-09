@@ -181,7 +181,7 @@ static uint8_t read_t64_file(FIL *fd_p)
          */
         if(start_address == 0x0)
         {
-            main_error("T64 snapshots are not supported!", __FILE__, __LINE__, 0);
+            dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "T64 snapshots are not supported!", __FILE__, __LINE__, 0);
         }
 
         /* Get end address */
@@ -195,7 +195,7 @@ static uint8_t read_t64_file(FIL *fd_p)
          */
         if(end_address == 0xC3C6)
         {
-            main_error("T64 file is corrupt!", __FILE__, __LINE__, 0);
+            dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "T64 file is corrupt!", __FILE__, __LINE__, 0);
         }
 
         /* Calculate size of entry */
@@ -252,7 +252,7 @@ static uint8_t read_prg_file(FIL *fd_p)
 
     if(res != FR_OK || bytes_read == 0)
     {
-        main_error("Failed to read PRG file!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to read PRG file!", __FILE__, __LINE__, 0);
         return_val = 0;
         goto exit;
     }

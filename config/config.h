@@ -22,13 +22,15 @@
 
 
 
-#ifndef _DRV_CLK_H
-#define _DRV_CLK_H
+#ifndef _CONFIG_H
+#define _CONFIG_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
-void drv_clk_init();
-void drv_clk_config();
+void config_clk();
+void config_mpu();
+void config_cache_inst_on();
+void config_cache_data_on();
 
 #endif

@@ -26,7 +26,7 @@
 #define _DRV_JOYST_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
 typedef enum
 {

@@ -31,6 +31,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx.h"
+#include "dev_term.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,31 +60,25 @@
 #define USBH_free                 free
 #define USBH_memset               memset
 #define USBH_memcpy               memcpy
-    
+
 /* DEBUG macros */   
 #if (USBH_DEBUG_LEVEL > 0)
-#define USBH_UsrLog(...)   printf(__VA_ARGS__);\
-                           printf("\n");
+#define USBH_UsrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
 #else
-#define USBH_UsrLog(...)   
-#endif 
-                            
-                            
+#define USBH_UsrLog(...)
+#endif
+
 #if (USBH_DEBUG_LEVEL > 1)
 
-#define USBH_ErrLog(...)   printf("ERROR: ") ;\
-                           printf(__VA_ARGS__);\
-                           printf("\n");
+#define USBH_ErrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
 #else
-#define USBH_ErrLog(...)   
+#define USBH_ErrLog(...)
 #endif 
-                                                      
-#if (USBH_DEBUG_LEVEL > 2)                         
-#define USBH_DbgLog(...)   printf("DEBUG : ") ;\
-                           printf(__VA_ARGS__);\
-                           printf("\n");
+
+#if (USBH_DEBUG_LEVEL > 2)
+#define USBH_DbgLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
 #else
-#define USBH_DbgLog(...)                         
+#define USBH_DbgLog(...)
 #endif
 
 /* Exported functions ------------------------------------------------------- */

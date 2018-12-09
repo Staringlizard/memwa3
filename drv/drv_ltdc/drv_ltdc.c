@@ -263,7 +263,7 @@ void drv_ltdc_disable_clut(uint8_t layer)
 
 void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 {
-    main_warning("HAL LTDC error!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
+    dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "HAL LTDC error!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
     __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_TE);
     __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_FU);
     hltdc->State = HAL_LTDC_STATE_READY;
@@ -272,6 +272,6 @@ void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 
 void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc)
 {
-    main_error("HAL LTDC line callback!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
+    dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "HAL LTDC line callback!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
     //HAL_LTDC_ProgramLineEvent(hltdc, 200);
 }

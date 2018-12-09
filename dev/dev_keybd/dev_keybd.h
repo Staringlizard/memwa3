@@ -25,7 +25,7 @@
 #define _DEV_KEYBD_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 #include "if.h"
 
 typedef enum

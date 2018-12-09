@@ -386,7 +386,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(res != FR_OK)
     {
-        main_error("Cannot open bitmap file!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot open bitmap file!", __FILE__, __LINE__, 0);
     }
 
     /* Get file header */
@@ -394,13 +394,13 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != sizeof(bitmap_file_header_t))
     {
-        main_error("Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
     }
 
     /* Check so that file is bitmap */
     if(bitmap_p->bitmap_file_header.type !=0x4D42)
     {
-        main_error("Only bitmap files are supported!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Only bitmap files are supported!", __FILE__, __LINE__, 0);
     }
 
     /* Get the info header */
@@ -408,7 +408,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != sizeof(bitmap_info_header_t))
     {
-        main_error("Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
     }
 
     /* Go to bitmap data */
@@ -418,7 +418,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bitmap_p->data_p == NULL)
     {
-        main_error("Malloc problems!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Malloc problems!", __FILE__, __LINE__, 0);
     }
 
     /* Get bitmap data */
@@ -426,7 +426,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != bitmap_p->bitmap_info_header.size_image)
     {
-        main_error("Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
     }
 
     return bitmap_p;

@@ -27,7 +27,7 @@
  */
 
 #include "main.h"
-#include "drv_clk.h"
+#include "config.h"
 #include "diag.h"
 #include "usbh_core.h"
 #include "usbh_hid_keybd.h"
@@ -48,8 +48,8 @@ int main()
 {
     diag_status_t diag_status = DIAG_STATUS_OK;
 
-    SCB_EnableICache();
-    SCB_EnableDCache();
+    config_cache_inst_on();
+    config_cache_data_on();
 
     __set_PRIMASK(0); /* Enable IRQ */
 
@@ -57,7 +57,7 @@ int main()
 
     HAL_Delay(200);
 
-    drv_clk_config();
+    config_clk();
     drv_joyst_init();
 
 #if 0
@@ -69,7 +69,7 @@ int main()
 
         if(diag_status != DIAG_STATUS_OK)
         {
-            main_error("Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
+            dev_term_printf("Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
             while(1){;}
         }
 
@@ -83,20 +83,22 @@ int main()
                 diag_status = diag_sdcard_run();
                 if(diag_status != DIAG_STATUS_OK)
                 {
-                    main_error("Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
+                    dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
                 }
                 break;
             }
         }
     }
 #endif
-    mem_init();
-    storage_init();
-    video_init();
+    dev_mem_init();
+    dev_storage_init();
+    dev_storage_mount();
+    dev_storage_read();
+    dev_video_init();
     dev_audio_init();
     dev_keybd_init();
-    term_init();
-    misc_init();
+    dev_term_init();
+    dev_misc_init();
 
     stage_init(CC_STAGE_FILES_ADDR);
     stage_select_layer(0);
@@ -105,23 +107,6 @@ int main()
     sm_run();
 }
 
-
-void main_error(char *string_p, char *file_p, uint32_t line, uint32_t extra)
-{
-    printf("[ERR] %s (%lu)\n", string_p, extra);
-    stage_set_message(string_p);
-    if(sm_get_state() == SM_STATE_EMULATOR && sm_get_ltdc_stats_flag())
-    {
-        stage_draw_info(INFO_PRINT, 0   );
-    }
-    //printf("[%s:%lu] %s\n", file_p, line, string_p);
-}
-
-void main_warning(char *string_p, char *file_p, uint32_t line, uint32_t extra)
-{
-    printf("[ERR] %s (%lu)\n", string_p, extra);
-    //printf("[%s:%lu] %s\n", file_p, line, string_p);
-}
 
 char *main_get_fw_revision()
 {

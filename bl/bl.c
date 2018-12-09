@@ -22,8 +22,8 @@
 
 
 #include "bl.h"
-#include "ltdc.h"
-#include "sdcard.h"
+#include "drv_ltdc.h"
+#include "drv_sdcard.h"
 #include "ff.h"
 #include "stm32h7xx_hal_flash.h"
 #include "stm32h7xx_hal_rcc.h"

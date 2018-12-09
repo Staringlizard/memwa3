@@ -35,6 +35,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx.h"  /* replace 'stm32xxx' with your HAL driver header filename, ex: stm32f4xx.h */
+#include "dev_term.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,55 +61,46 @@
 #define USBD_DEBUG_LEVEL                      2
 
 /* MSC Class Config */
-#define MSC_MEDIA_PACKET                       8192   
+#define MSC_MEDIA_PACKET                       8192
 
 /* CDC Class Config */
-#define USBD_CDC_INTERVAL                      2000  
+#define USBD_CDC_INTERVAL                      2000
 
  /* DFU Class Config */
 #define USBD_DFU_MAX_ITF_NUM                   1
 #define USBD_DFU_XFERS_IZE                     1024
 
  /* AUDIO Class Config */
-#define USBD_AUDIO_FREQ                       22100 
+#define USBD_AUDIO_FREQ                       22100
 
 /** @defgroup USBD_Exported_Macros
   * @{
   */ 
 
- /* Memory management macros */   
+ /* Memory management macros */
 #define USBD_malloc               malloc
 #define USBD_free                 free
 #define USBD_memset               memset
 #define USBD_memcpy               memcpy
-    
- /* DEBUG macros */  
 
-  
-#if (USBD_DEBUG_LEVEL > 0)
-#define  USBD_UsrLog(...)   printf(__VA_ARGS__);\
-                            printf("\n");
+/* DEBUG macros */
+#if (USBH_DEBUG_LEVEL > 0)
+#define USBD_UsrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
 #else
-#define USBD_UsrLog(...)   
-#endif 
-                            
-                            
-#if (USBD_DEBUG_LEVEL > 1)
+#define USBD_UsrLog(...)
+#endif
 
-#define  USBD_ErrLog(...)   printf("ERROR: ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
+#if (USBH_DEBUG_LEVEL > 1)
+
+#define USBD_ErrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
 #else
-#define USBD_ErrLog(...)   
-#endif 
-                            
-                            
-#if (USBD_DEBUG_LEVEL > 2)                         
-#define  USBD_DbgLog(...)   printf("DEBUG : ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
+#define USBD_ErrLog(...)
+#endif
+
+#if (USBH_DEBUG_LEVEL > 2)
+#define USBD_DbgLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
 #else
-#define USBD_DbgLog(...)                         
+#define USBD_DbgLog(...)
 #endif
                             
 /**

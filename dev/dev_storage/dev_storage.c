@@ -48,18 +48,29 @@ static char g_sd_path_p[] = {"0:/"};
 static uint32_t g_clut_a[16];
 //static if_keybd_map_t g_keybd_map_a[DEFAULT_KEY_MAX + 1];
 
-void storage_init()
+void dev_storage_init()
+{
+    drv_sdcard_init();
+}
+
+void dev_storage_mount()
+{
+    if(f_mount(&g_fatfs, (TCHAR const*)g_sd_path_p, 1) != FR_OK)
+    {
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to mount filesystem!", __FILE__, __LINE__, 0);
+    }
+}
+
+void dev_storage_read()
 {
     uint32_t bytes_read = 0;
     uint32_t read_cnt = 0;
     FIL fd;
     FRESULT res;
 
-    drv_sdcard_init();
-
     if(f_mount(&g_fatfs, (TCHAR const*)g_sd_path_p, 1) != FR_OK)
     {
-        main_error("Failed to mount filesystem!", __FILE__, __LINE__, 0);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to mount filesystem!", __FILE__, __LINE__, 0);
     }
 
    /* Try and load basic rom from sd card */
@@ -73,7 +84,7 @@ void storage_init()
             f_read(&fd, (uint8_t *)(CC_BROM_BASE_ADDR + CC_BROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
-                main_warning("Error reading rom file (brom)!", __FILE__, __LINE__, read_cnt);
+                dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (brom)!", __FILE__, __LINE__, read_cnt);
                 break;
             }
             read_cnt += bytes_read;
@@ -97,7 +108,7 @@ void storage_init()
             f_read(&fd, (uint8_t *)(CC_CROM_BASE_ADDR + CC_CROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
-                main_warning("Error reading rom file (crom)!", __FILE__, __LINE__, read_cnt);
+                dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (crom)!", __FILE__, __LINE__, read_cnt);
                 break;
             }
             read_cnt += bytes_read;
@@ -121,7 +132,7 @@ void storage_init()
             f_read(&fd, (uint8_t *)(CC_KROM_BASE_ADDR + CC_KROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
-                main_warning("Error reading rom file (krom)!", __FILE__, __LINE__, read_cnt);
+                dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (krom)!", __FILE__, __LINE__, read_cnt);
                 break;
             }
             read_cnt += bytes_read;
@@ -145,7 +156,7 @@ void storage_init()
             res = f_read(&fd, (uint8_t *)(DD_ALL_BASE_ADDR + DD_DOS_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
-                main_warning("Error reading rom file (dos)!", __FILE__, __LINE__, read_cnt);
+                dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (dos)!", __FILE__, __LINE__, read_cnt);
                 break;
             }
             read_cnt += bytes_read;
@@ -177,7 +188,7 @@ void storage_init()
 
         if(res != FR_OK || bytes_read == 0)
         {
-            main_warning("Error reading file (palette)!", __FILE__, __LINE__, 0);
+            dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading file (palette)!", __FILE__, __LINE__, 0);
         }
 
         colors_pp[colors_cnt] = strtok((char *)palette_string_p, delimiter_p);
@@ -216,13 +227,11 @@ void storage_init()
 
         if(res != FR_OK || bytes_read == 0)
         {
-            main_warning("Error reading file (palette)!", __FILE__, __LINE__, 0);
+            dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "Error reading file (palette)!", __FILE__, __LINE__, 0);
         }
 
         //dev_keybd_populate_map(key_string_p, g_keybd_map_a);
 
         f_close(&fd);
     }
-
 }
-

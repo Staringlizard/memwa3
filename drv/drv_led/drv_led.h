@@ -25,7 +25,7 @@
 #define _DRV_LED_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
 void drv_led_init();
 uint32_t drv_led_set(uint8_t red, uint8_t green, uint8_t blue);

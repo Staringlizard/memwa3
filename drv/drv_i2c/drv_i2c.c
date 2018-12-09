@@ -27,7 +27,7 @@
 //#define I2C_TIMING       0x40912732
 #define I2C_TIMING       0x10C0ECFF
 
-static I2C_HandleTypeDef g_i2c_handle;
+I2C_HandleTypeDef g_i2c_handle;
 
 void drv_i2c_init()
 {
@@ -46,17 +46,25 @@ void drv_i2c_init()
     ret = HAL_I2C_Init(&g_i2c_handle);
     if(ret != HAL_OK)
     {
-        main_error("Failed to initialize I2C!", __FILE__, __LINE__, ret);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize I2C!", __FILE__, __LINE__, ret);
     }
 
     HAL_I2CEx_ConfigAnalogFilter(&g_i2c_handle, I2C_ANALOGFILTER_ENABLE);
+}
+
+void drv_i2c_wr_reg2(uint8_t addr, uint8_t reg, uint8_t *val)
+{
+    if(HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, val, 2, 2000) != HAL_OK)
+    {
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register!", __FILE__, __LINE__, reg);
+    }
 }
 
 void drv_i2c_wr_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
     if(HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, &val, 1, 2000) != HAL_OK)
     {
-        main_error("Failed to write I2C register!", __FILE__, __LINE__, reg);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register!", __FILE__, __LINE__, reg);
     }
 }
 
@@ -66,7 +74,7 @@ uint8_t drv_i2c_rd_reg(uint8_t addr, uint8_t reg)
 
     if(HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, &val, 1, 2000) != HAL_OK)
     {
-        main_error("Failed to read I2C register!", __FILE__, __LINE__, reg);
+        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C register!", __FILE__, __LINE__, reg);
     }
 
     return val;

@@ -25,6 +25,7 @@
 #define _DEV_AUDIO_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 #include <stdio.h>
 
 void dev_audio_init();

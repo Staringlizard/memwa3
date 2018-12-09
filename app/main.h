@@ -25,13 +25,12 @@
 #define _MAIN_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 #include <stdio.h>
 
 /* This must ALWAYS be uppdated for every release */
 #define FW_REVISION             "V1.0.7"
 
-void main_error(char *string_p, char *file_p, uint32_t line, uint32_t extra);
-void main_warning(char *string_p, char *file_p, uint32_t line, uint32_t extra);
 char *main_get_fw_revision();
 
 #endif

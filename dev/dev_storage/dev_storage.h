@@ -25,8 +25,11 @@
 #define _DEV_STORAGE_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 #include <stdio.h>
 
-void storage_init();
+void dev_storage_init();
+void dev_storage_mount();
+void dev_storage_read();
 
 #endif

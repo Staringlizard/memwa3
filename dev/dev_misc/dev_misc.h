@@ -25,8 +25,9 @@
 #define _DEV_MISC_H
 
 #include "stm32h7xx_hal.h"
+#include "dev_term.h"
 #include <stdio.h>
 
-void misc_init();
+void dev_misc_init();
 
 #endif

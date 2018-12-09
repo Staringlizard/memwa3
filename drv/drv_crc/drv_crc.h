@@ -25,7 +25,7 @@
 #define _DRV_CRC_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
 void drv_crc_init();
 uint32_t drv_crc_calculate(uint8_t *buffer_p, uint32_t length);

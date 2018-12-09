@@ -25,7 +25,7 @@
 #define _DRV_RNG_H
 
 #include "stm32h7xx_hal.h"
-#include "main.h"
+#include "dev_term.h"
 
 void drv_rng_init();
 uint32_t drv_rng_get();
