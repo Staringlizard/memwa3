@@ -27,29 +27,33 @@
  */
 
 #include "main.h"
-#include "config.h"
+#include "hal_conf.h"
 #include "diag.h"
 #include "usbh_core.h"
 #include "usbh_hid_keybd.h"
-#include "dev_term.h"
-#include "dev_keybd.h"
+#include "serv_term.h"
+#include "serv_keybd.h"
+#include "serv_misc.h"
+#include "serv_storage.h"
+#include "drv_joyst.h"
+#include "drv_led.h"
+#include "drv_sdcard.h"
 #include "if.h"
 #include "romcc.h"
 #include "romdd.h"
 #include "stage.h"
 
 #include "sm.h"
-#include "dev_mem.h"
-#include "dev_audio.h"
-#include "dev_video.h"
+#include "serv_mem.h"
+#include "serv_audio.h"
+#include "serv_video.h"
 
-static uint8_t tmp = 0;
 int main()
 {
-    diag_status_t diag_status = DIAG_STATUS_OK;
+    //diag_status_t diag_status = DIAG_STATUS_OK;
 
-    config_cache_inst_on();
-    config_cache_data_on();
+    hal_conf_cache_inst_on();
+    hal_conf_cache_data_on();
 
     __set_PRIMASK(0); /* Enable IRQ */
 
@@ -57,58 +61,42 @@ int main()
 
     HAL_Delay(200);
 
-    config_clk();
+    hal_conf_clk();
     drv_joyst_init();
 
-#if 0
-    /* Card inserted ? */
-    if(drv_sdcard_inserted() == 0)
+    serv_mem_init();
+    serv_storage_init();
+    serv_storage_mount();
+    serv_video_init();
+    serv_audio_init();
+    serv_keybd_init();
+    serv_term_init();
+    serv_misc_init();
+/*
+    diag_status = diag_run();
+    if(diag_status != DIAG_STATUS_OK)
     {
-        /* If not insterted, then run full diagnostic */
-        diag_status = diag_run();
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Diagnostic failed with code %d!", diag_status);
+        drv_led_set(1, 0, 0);
+        while(1) {;}
+    }
 
+    if(drv_sdcard_inserted() == 1)
+    {
+        diag_status = diag_sdcard_run();
         if(diag_status != DIAG_STATUS_OK)
         {
-            dev_term_printf("Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
-            while(1){;}
-        }
-
-        while(1)
-        {
-            /* If not, then just try again */
-            if(drv_sdcard_inserted() == 1)
-            {
-                drv_sdcard_init();
-                HAL_Delay(1000);
-                diag_status = diag_sdcard_run();
-                if(diag_status != DIAG_STATUS_OK)
-                {
-                    dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Diagnostic did not pass!", __FILE__, __LINE__, (uint32_t)diag_status);
-                }
-                break;
-            }
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Diagnostic failed with code %d!", diag_status);
+            drv_led_set(1, 0, 0);
+            while(1) {;}
         }
     }
-#endif
-    dev_mem_init();
-    dev_storage_init();
-    dev_storage_mount();
-    dev_storage_read();
-    dev_video_init();
-    dev_audio_init();
-    dev_keybd_init();
-    dev_term_init();
-    dev_misc_init();
+*/
+    serv_storage_read();
 
     stage_init(CC_STAGE_FILES_ADDR);
     stage_select_layer(0);
 
     sm_init();
     sm_run();
-}
-
-
-char *main_get_fw_revision()
-{
-    return FW_REVISION;
 }

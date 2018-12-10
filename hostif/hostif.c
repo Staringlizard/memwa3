@@ -33,8 +33,8 @@
 #include "diag.h"
 #include "usbh_core.h"
 #include "usbh_hid_keybd.h"
-#include "dev_term.h"
-#include "dev_keybd.h"
+#include "serv_term.h"
+#include "serv_keybd.h"
 #include "if.h"
 #include "romcc.h"
 #include "drv_ltdc.h"
@@ -226,19 +226,19 @@ void if_host_print(char *string_p, print_type_t print_type)
     switch(print_type)
     {
     case PRINT_TYPE_INFO:
-        dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, "%s\n", string_p);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "%s\n", string_p);
         break;
     case PRINT_TYPE_WARNING:
-        dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "%s\n", string_p);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "%s\n", string_p);
         break;
     case PRINT_TYPE_ERROR:
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "%s\n", string_p);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "%s\n", string_p);
         stage_set_message(string_p);
         stage_draw_info(INFO_PRINT, 0);
         sm_error_occured();
         break;
     case PRINT_TYPE_DEBUG:
-        dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, "%s\n", string_p);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_DEBUG, "%s\n", string_p);
         break;
     }
 }

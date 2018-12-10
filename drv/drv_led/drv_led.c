@@ -26,7 +26,7 @@
  */
 
 #include "drv_led.h"
-#include "hal_msp.h"
+#include "hal_conf.h"
 
 static uint8_t g_red;
 static uint8_t g_green;
@@ -48,7 +48,7 @@ void drv_led_init()
     HAL_LED_MspInit();
 }
 
-uint32_t drv_led_set(uint8_t red, uint8_t green, uint8_t blue)
+void drv_led_set(uint8_t red, uint8_t green, uint8_t blue)
 {
     g_red = red;
     g_green = green;

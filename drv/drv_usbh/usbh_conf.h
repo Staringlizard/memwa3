@@ -31,7 +31,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx.h"
-#include "dev_term.h"
+#include "serv_term.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,20 +63,20 @@
 
 /* DEBUG macros */   
 #if (USBH_DEBUG_LEVEL > 0)
-#define USBH_UsrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
+#define USBH_UsrLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
 #else
 #define USBH_UsrLog(...)
 #endif
 
 #if (USBH_DEBUG_LEVEL > 1)
 
-#define USBH_ErrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
+#define USBH_ErrLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
 #else
 #define USBH_ErrLog(...)
 #endif 
 
 #if (USBH_DEBUG_LEVEL > 2)
-#define USBH_DbgLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
+#define USBH_DbgLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
 #else
 #define USBH_DbgLog(...)
 #endif

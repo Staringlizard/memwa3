@@ -26,13 +26,13 @@
 #define _DRV_SDRAM_H
 
 #include "stm32h7xx_hal.h"
-#include "dev_term.h"
+#include "serv_term.h"
 
 #define SDRAM_BANK              FMC_SDRAM_BANK1
 #define SDRAM_ADDR              0x60000000
 #define SDRAM_SIZE              0x800000
 
-void stats_select_layer(uint8_t layer);
 void drv_sdram_init();
+void drv_sdram_start_sequence();
 
 #endif

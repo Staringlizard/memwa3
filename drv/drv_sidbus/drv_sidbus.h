@@ -2,7 +2,7 @@
 #define _DRV_SIDBUS_H
 
 #include "stm32h7xx_hal.h"
-#include "dev_term.h"
+#include "serv_term.h"
 
 typedef enum
 {

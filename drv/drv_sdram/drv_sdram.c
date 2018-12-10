@@ -45,7 +45,41 @@
 static SDRAM_HandleTypeDef g_sdram_handle;
 static FMC_SDRAM_TimingTypeDef g_fmc_sdram_timing;
 
-static void run_start_sequence()
+void drv_sdram_init()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    /* SDRAM device configuration */
+    g_sdram_handle.Instance = FMC_SDRAM_DEVICE;
+
+    g_fmc_sdram_timing.LoadToActiveDelay    = 1;
+    g_fmc_sdram_timing.ExitSelfRefreshDelay = 1;
+    g_fmc_sdram_timing.SelfRefreshTime      = 1;
+    g_fmc_sdram_timing.RowCycleDelay        = 5;
+    g_fmc_sdram_timing.WriteRecoveryTime    = 1;
+    g_fmc_sdram_timing.RPDelay              = 2;
+    g_fmc_sdram_timing.RCDDelay             = 2;
+
+    g_sdram_handle.Init.SDBank             = SDRAM_BANK;
+    g_sdram_handle.Init.ColumnBitsNumber   = FMC_SDRAM_COLUMN_BITS_NUM_8;
+    g_sdram_handle.Init.RowBitsNumber      = FMC_SDRAM_ROW_BITS_NUM_12;
+    g_sdram_handle.Init.MemoryDataWidth    = FMC_SDRAM_MEM_BUS_WIDTH_16;
+    g_sdram_handle.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
+    g_sdram_handle.Init.CASLatency         = FMC_SDRAM_CAS_LATENCY_3;
+    g_sdram_handle.Init.WriteProtection    = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
+    g_sdram_handle.Init.SDClockPeriod      = FMC_SDRAM_CLOCK_PERIOD_2;
+    g_sdram_handle.Init.ReadBurst          = FMC_SDRAM_RBURST_ENABLE;
+    g_sdram_handle.Init.ReadPipeDelay      = FMC_SDRAM_RPIPE_DELAY_0;
+
+    /* Initialize the SDRAM controller */
+    ret = HAL_SDRAM_Init(&g_sdram_handle, &g_fmc_sdram_timing);
+    if(ret != HAL_OK)
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize sdram!");
+    }
+}
+
+void drv_sdram_start_sequence()
 {
     FMC_SDRAM_CommandTypeDef FMC_SDRAM_Command;
     __IO uint32_t tmpmrd = 0;
@@ -100,43 +134,4 @@ static void run_start_sequence()
     /* (15.62 us x Freq) - 20 */
     /* Set the device refresh counter */
     g_sdram_handle.Instance->SDRTR |= ((uint32_t)((1292)<< 1));
-
-    /* Swap so that SDRAM can be found at 0x60000000 instead of 0xC0000000 */
-    HAL_SetFMCMemorySwappingConfig(FMC_SWAPBMAP_SDRAM_SRAM);
-}
-
-void drv_sdram_init()
-{
-    HAL_StatusTypeDef ret = HAL_OK;
-
-    /* SDRAM device configuration */
-    g_sdram_handle.Instance = FMC_SDRAM_DEVICE;
-
-    g_fmc_sdram_timing.LoadToActiveDelay    = 1;
-    g_fmc_sdram_timing.ExitSelfRefreshDelay = 1;
-    g_fmc_sdram_timing.SelfRefreshTime      = 1;
-    g_fmc_sdram_timing.RowCycleDelay        = 5;
-    g_fmc_sdram_timing.WriteRecoveryTime    = 1;
-    g_fmc_sdram_timing.RPDelay              = 2;
-    g_fmc_sdram_timing.RCDDelay             = 2;
-
-    g_sdram_handle.Init.SDBank             = SDRAM_BANK;
-    g_sdram_handle.Init.ColumnBitsNumber   = FMC_SDRAM_COLUMN_BITS_NUM_8;
-    g_sdram_handle.Init.RowBitsNumber      = FMC_SDRAM_ROW_BITS_NUM_12;
-    g_sdram_handle.Init.MemoryDataWidth    = FMC_SDRAM_MEM_BUS_WIDTH_16;
-    g_sdram_handle.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
-    g_sdram_handle.Init.CASLatency         = FMC_SDRAM_CAS_LATENCY_3;
-    g_sdram_handle.Init.WriteProtection    = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
-    g_sdram_handle.Init.SDClockPeriod      = FMC_SDRAM_CLOCK_PERIOD_2;
-    g_sdram_handle.Init.ReadBurst          = FMC_SDRAM_RBURST_ENABLE;
-    g_sdram_handle.Init.ReadPipeDelay      = FMC_SDRAM_RPIPE_DELAY_0;
-
-    /* Initialize the SDRAM controller */
-    ret = HAL_SDRAM_Init(&g_sdram_handle, &g_fmc_sdram_timing);
-    if(ret != HAL_OK)
-    {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize sdram!", __FILE__, __LINE__, ret);
-    }
-
-    run_start_sequence();
 }

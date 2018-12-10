@@ -29,7 +29,7 @@
 #include "stm32h7xx_hal_hcd.h"
 #include "stm32h7xx_hal_i2c.h"
 #include "stm32h7xx_hal_sdram.h"
-#include "dev_term.h"
+#include "serv_term.h"
 
 void drv_sdcard_init();
 uint8_t drv_sdcard_inserted();

@@ -28,14 +28,14 @@
 
 #include "diag.h"
 #include "ff.h"
-#include "tda19988.h"
+#include "dev_tda19988.h"
 #include "drv_ltdc.h"
 #include "drv_sdram.h"
 
+
 #define TDA19988        0x0301
-#define MKREG(page, addr)   (((page) << 8) | (addr))
-#define TDA_VERSION     MKREG(0x00, 0x00)
-#define TDA_VERSION_MSB     MKREG(0x00, 0x02)
+#define TDA_VERSION     0x0000
+#define TDA_VERSION_MSB 0x0002
 
 #define I2C_CEC_ADDRESS    0x68
 #define I2C_HDMI_ADDRESS   0xE0
@@ -183,9 +183,9 @@ static tda19988_status_t tda19988_run()
     uint16_t version = 0;
     uint8_t data;
 
-    data = tda19988_rd_reg(I2C_HDMI_ADDRESS,  TDA_VERSION);
+    read_reg_8(TDA19988_ADDR_HDMI, TDA_VERSION, &data);
     version |= data;
-    data = tda19988_rd_reg(I2C_HDMI_ADDRESS,  TDA_VERSION_MSB);
+    read_reg_8(TDA19988_ADDR_HDMI, TDA_VERSION_MSB, &data);
     version |= (data << 8);
 
     /* Clear feature bits */
@@ -202,7 +202,6 @@ static tda19988_status_t tda19988_run()
             break;
     }
 
-exit:
     return tda19988_status;
 }
 
@@ -257,16 +256,26 @@ diag_status_t diag_run()
     if(sdram_status != DIAG_SDRAM_STATUS_OK)
     {
         diag_status = DIAG_STATUS_ERROR_SDRAM;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "diag sdram: NOK");
         goto exit;
     }
+    else
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag sdram: OK");
+    }
 
-    /* ADV7511 (I2C) functionality */
+    /* tda19988 (I2C) functionality */
     tda19988_status = tda19988_run();
 
     if(tda19988_status != DIAG_TDA19988_STATUS_OK)
     {
         diag_status = DIAG_STATUS_ERROR_I2C;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "diag tda19988: NOK");
         goto exit;
+    }
+    else
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag tda19988: OK");
     }
 
     /* Display test screen for optical inspection */
@@ -287,7 +296,12 @@ diag_status_t diag_sdcard_run()
     if(sdcard_status != DIAG_SDCARD_STATUS_OK)
     {
         diag_status = DIAG_STATUS_ERROR_SDCARD;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "diag sdcard: NOK");
         goto exit;
+    }
+    else
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag sdcard: OK");
     }
 
 exit:

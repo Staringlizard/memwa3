@@ -38,7 +38,7 @@ void drv_rng_init()
     ret = HAL_RNG_Init(&g_rng_handle);
     if(ret != HAL_OK)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize RNG!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize RNG!");
     }
 }
 

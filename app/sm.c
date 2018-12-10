@@ -29,13 +29,13 @@
 
 #include "sm.h"
 #include "if.h"
-#include "dev_keybd.h"
+#include "serv_keybd.h"
 #include "drv_ltdc.h"
 #include "stage.h"
 #include "ff.h"
 #include "main.h"
 #include "drv_timer.h"
-#include "dev_mem.h"
+#include "serv_mem.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -49,9 +49,9 @@ extern if_emu_dd_t g_if_dd_emu;
 
 static FIL *g_fd_p;
 static sm_state_t g_current_state;
-static keybd_state_t g_prev_key_state;
-static keybd_state_t g_prev_shift_state;
-static keybd_state_t g_prev_ctrl_state;
+static serv_keybd_state_t g_prev_key_state;
+static serv_keybd_state_t g_prev_shift_state;
+static serv_keybd_state_t g_prev_ctrl_state;
 static uint8_t g_prev_keys_active;
 static uint8_t g_key_active;
 static uint32_t g_key_active_start;
@@ -181,7 +181,7 @@ static uint8_t read_t64_file(FIL *fd_p)
          */
         if(start_address == 0x0)
         {
-            dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "T64 snapshots are not supported!", __FILE__, __LINE__, 0);
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 snapshots are not supported!");
         }
 
         /* Get end address */
@@ -195,7 +195,7 @@ static uint8_t read_t64_file(FIL *fd_p)
          */
         if(end_address == 0xC3C6)
         {
-            dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "T64 file is corrupt!", __FILE__, __LINE__, 0);
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 file is corrupt!");
         }
 
         /* Calculate size of entry */
@@ -252,7 +252,7 @@ static uint8_t read_prg_file(FIL *fd_p)
 
     if(res != FR_OK || bytes_read == 0)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to read PRG file!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read PRG file!");
         return_val = 0;
         goto exit;
     }
@@ -265,10 +265,10 @@ exit:
 
 static void read_keybd()
 {
-    uint8_t keys_active = dev_keybd_get_active_keys_hash();
-    keybd_state_t key_state = dev_keybd_key_state();
-    keybd_state_t shift_state = dev_keybd_get_shift_state();
-    keybd_state_t ctrl_state = dev_keybd_get_ctrl_state();
+    uint8_t keys_active = serv_keybd_get_active_keys_hash();
+    serv_keybd_state_t key_state = serv_keybd_key_state();
+    serv_keybd_state_t shift_state = serv_keybd_get_shift_state();
+    serv_keybd_state_t ctrl_state = serv_keybd_get_ctrl_state();
 
     /* Any change ? */
     if(keys_active == g_prev_keys_active &&
@@ -286,7 +286,7 @@ static void read_keybd()
         g_prev_ctrl_state = ctrl_state;
     }
 
-    g_key_active = dev_keybd_get_active_key();
+    g_key_active = serv_keybd_get_active_key();
     if(g_key_active != 0)
     {
         g_key_active_start = drv_timer_get_ms();
@@ -297,7 +297,7 @@ static void read_keybd()
     }
 
     /* Keycodes regardless of state */
-    if(ctrl_state == KEYBD_STATE_PRESSED)
+    if(ctrl_state == SERV_KEYBD_STATE_PRESSED)
     {
         switch(g_key_active)
         {
@@ -427,7 +427,7 @@ static void read_keybd()
     switch(g_current_state)
     {
         case SM_STATE_EMULATOR:
-            g_if_cc_emu.if_emu_cc_ue.ue_keybd_fp(dev_keybd_get_active_keys(), 6, shift_state, ctrl_state);
+            g_if_cc_emu.if_emu_cc_ue.ue_keybd_fp(serv_keybd_get_active_keys(), 6, shift_state, ctrl_state);
             break;
         case SM_STATE_MENU:
             if(g_key_active == 40) /* Return key */
@@ -435,7 +435,7 @@ static void read_keybd()
                 change_state(SM_STATE_FILE_SELECT);
             }
 
-            if(key_state == KEYBD_STATE_PRESSED)
+            if(key_state == SERV_KEYBD_STATE_PRESSED)
             {
                 stage_input_key(STAGE_MENU, g_key_active);
             }
@@ -500,14 +500,14 @@ static void read_keybd()
                 }
             }
 
-            if(key_state == KEYBD_STATE_PRESSED)
+            if(key_state == SERV_KEYBD_STATE_PRESSED)
             {
                 stage_input_key(STAGE_FILE_SELECT, g_key_active);
             }
 
             break;
         case SM_STATE_COLOR_SCREEN:
-            if(key_state == KEYBD_STATE_PRESSED)
+            if(key_state == SERV_KEYBD_STATE_PRESSED)
             {
                 stage_input_key(STAGE_COLOR_SCREEN, g_key_active);
             }
@@ -577,7 +577,7 @@ void sm_run()
                 ;
                 break;
         }
-        dev_keybd_poll();
+        serv_keybd_poll();
         read_keybd();
     }
 }

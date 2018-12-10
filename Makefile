@@ -12,7 +12,6 @@ TARGET_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -g -Wl,-Map=./
 
 BL_INCLUDES := \
 	-I./if \
-	-I./hal_msp \
 	-I./cmsis \
 	-I./cmsis_boot \
 	-I./hal \
@@ -26,12 +25,14 @@ BL_INCLUDES := \
 	-I./drv/drv_crc \
 	-I./drv/drv_rng \
 	-I./drv/drv_sdram \
-	-I./mware/tda19988 \
+	-I./dev/dev_tda19988 \
+	-I./dev/dev_is42s16400j \
+	-I./dev/dev_mos658x \
 	-I./drv/drv_usbd \
 	-I./drv/drv_usbh \
 	-I./drv/drv_joyst \
 	-I./drv/drv_led \
-	-I./config \
+	-I./hal_setup \
 	-I./mware/fatfs \
 	-I./mware/usb_host/core \
 	-I./mware/usb_host/hid \
@@ -66,14 +67,13 @@ BL_LINK_FILES := \
 	./out_bl/ccsbcs.o
 
 TARGET_INCLUDES := \
-	-I./dev/dev_video \
-	-I./dev/dev_mem \
-	-I./dev/dev_storage \
-	-I./dev/dev_audio \
-	-I./dev/dev_keybd \
-	-I./dev/dev_misc \
+	-I./serv/serv_video \
+	-I./serv/serv_mem \
+	-I./serv/serv_storage \
+	-I./serv/serv_audio \
+	-I./serv/serv_keybd \
+	-I./serv/serv_misc \
 	-I./if \
-	-I./hal_msp \
 	-I./cmsis \
 	-I./cmsis_boot \
 	-I./hal \
@@ -87,12 +87,14 @@ TARGET_INCLUDES := \
 	-I./drv/drv_crc \
 	-I./drv/drv_rng \
 	-I./drv/drv_sdram \
-	-I./mware/tda19988 \
+	-I./dev/dev_tda19988 \
+	-I./dev/dev_is42s16400j \
+	-I./dev/dev_mos658x \
 	-I./drv/drv_usbd \
 	-I./drv/drv_usbh \
 	-I./drv/drv_joyst \
 	-I./drv/drv_led \
-	-I./config \
+	-I./hal_setup \
 	-I./drv/drv_i2c \
 	-I./mware/fatfs \
 	-I./mware/usb_host/core \
@@ -101,19 +103,18 @@ TARGET_INCLUDES := \
 	-I./mware/usb_device/core \
 	-I./mware/usb_device/cdc \
 	-I./mware/usb_device/cust \
-	-I./dev/dev_term \
+	-I./serv/serv_term \
 	-I./app \
 	-I./rom \
 	-I./hostif
 
 TARGET_LINK_FILES := \
-	./out_target/dev_video.o \
-	./out_target/dev_mem.o \
-	./out_target/dev_storage.o \
-	./out_target/dev_audio.o \
-	./out_target/dev_keybd.o \
-	./out_target/dev_misc.o \
-	./out_target/hal_msp.o \
+	./out_target/serv_video.o \
+	./out_target/serv_mem.o \
+	./out_target/serv_storage.o \
+	./out_target/serv_audio.o \
+	./out_target/serv_keybd.o \
+	./out_target/serv_misc.o \
 	./out_target/startup_stm32h743xx.o \
 	./out_target/drv_sidbus.o \
 	./out_target/drv_timer.o \
@@ -124,11 +125,14 @@ TARGET_LINK_FILES := \
 	./out_target/drv_led.o \
 	./out_target/diskio.o \
 	./out_target/drv_sdram.o \
-	./out_target/tda19988.o \
+	./out_target/dev_tda19988.o \
+	./out_target/dev_is42s16400j.o \
+	./out_target/dev_mos658x.o \
 	./out_target/drv_ltdc.o \
 	./out_target/drv_i2c.o \
-	./out_target/config.o \
-	./out_target/dev_term.o \
+	./out_target/hal_conf.o \
+	./out_target/hal_msp.o \
+	./out_target/serv_term.o \
 	./out_target/stage.o \
 	./out_target/diag.o \
 	./out_target/usbh_conf.o \
@@ -223,13 +227,12 @@ $(BL):
 $(TARGET):
 	@mkdir ./out_target 2>/dev/null; true
 	@echo Compiling target...
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_video.o ./dev/dev_video/dev_video.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_mem.o ./dev/dev_mem/dev_mem.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_storage.o ./dev/dev_storage/dev_storage.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_audio.o ./dev/dev_audio/dev_audio.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_keybd.o ./dev/dev_keybd/dev_keybd.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_misc.o ./dev/dev_misc/dev_misc.c
-	$(CC) $(TARGET_CFLAGS) -DUSE_HSE -o out_target/hal_msp.o ./hal_msp/hal_msp.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_video.o ./serv/serv_video/serv_video.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_mem.o ./serv/serv_mem/serv_mem.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_storage.o ./serv/serv_storage/serv_storage.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_audio.o ./serv/serv_audio/serv_audio.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_keybd.o ./serv/serv_keybd/serv_keybd.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_misc.o ./serv/serv_misc/serv_misc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_sidbus.o ./drv/drv_sidbus/drv_sidbus.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_timer.o ./drv/drv_timer/drv_timer.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_sdcard.o ./drv/drv_sdcard/drv_sdcard.c
@@ -239,11 +242,14 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_joyst.o ./drv/drv_joyst/drv_joyst.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_led.o ./drv/drv_led/drv_led.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_sdram.o ./drv/drv_sdram/drv_sdram.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/tda19988.o ./mware/tda19988/tda19988.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/dev_tda19988.o ./dev/dev_tda19988/dev_tda19988.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/dev_is42s16400j.o ./dev/dev_is42s16400j/dev_is42s16400j.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/dev_mos658x.o ./dev/dev_mos658x/dev_mos658x.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_ltdc.o ./drv/drv_ltdc/drv_ltdc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/drv_i2c.o ./drv/drv_i2c/drv_i2c.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/config.o ./config/config.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/dev_term.o ./dev/dev_term/dev_term.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/hal_conf.o ./hal_setup/hal_conf.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/hal_msp.o ./hal_setup/hal_msp.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/serv_term.o ./serv/serv_term/serv_term.c
 	$(CC) $(TARGET_CFLAGS) -DSCREEN_X2 -o out_target/stage.o ./app/stage.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/diag.o ./diag/diag.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/system_stm32h7xx.o ./cmsis_boot/system_stm32h7xx.c

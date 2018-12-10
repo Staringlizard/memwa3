@@ -93,14 +93,14 @@ static void InitTimer3()
     ret = HAL_TIM_Base_Init(&g_tim_handle_type);
     if(ret != HAL_OK)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize timer 3!", __FILE__, __LINE__, ret);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize timer 3!");
     }
     
     ret = HAL_TIM_Base_Start_IT(&g_tim_handle_type);
     /* Start the TIM time Base generation in interrupt mode */
     if(ret != HAL_OK)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to initialize timer 3!", __FILE__, __LINE__, ret);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize timer 3!");
     }
 }
 
@@ -143,7 +143,7 @@ void drv_timer_3_set(uint32_t value)
     /* Start the TIM time Base generation in interrupt mode */
     if(ret != HAL_OK)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to start timer 3", __FILE__, __LINE__, ret);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to start timer 3");
     }
 }
 
@@ -159,7 +159,7 @@ void drv_timer_3_tick()
         /* Start the TIM time Base generation in interrupt mode */
         if(ret != HAL_OK)
         {
-            dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Failed to stop timer 3", __FILE__, __LINE__, ret);
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to stop timer 3");
         }
     }
     else

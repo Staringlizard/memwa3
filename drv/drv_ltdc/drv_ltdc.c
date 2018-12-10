@@ -26,6 +26,7 @@
  */
 
 #include "drv_ltdc.h"
+#include "drv_led.h"
 #include "stm32h7xx_hal_ltdc.h"
 #include "stm32h7xx_hal_dma2d.h"
 #include <string.h>
@@ -89,7 +90,7 @@ void drv_ltdc_init(ltdc_mode_t ltdc_mode)
 
     switch(ltdc_mode)
     {
-        case DISP_MODE_VGA:
+        case LTDC_MODE_VGA:
             /* Timing configuration */
             g_ltdc_handle.Init.HorizontalSync = (VGA_HSYNC - 1);
             g_ltdc_handle.Init.VerticalSync = (VGA_VSYNC - 1);
@@ -112,7 +113,7 @@ void drv_ltdc_init(ltdc_mode_t ltdc_mode)
             g_ltdc_handle.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
             g_ltdc_handle.Instance = LTDC;
             break;
-        case DISP_MODE_SVGA:
+        case LTDC_MODE_SVGA:
             /* Timing configuration */
             g_ltdc_handle.Init.HorizontalSync = (SVGA_HSYNC - 1);
             g_ltdc_handle.Init.VerticalSync = (SVGA_VSYNC - 1);
@@ -232,13 +233,13 @@ void drv_ltdc_flip_buffer(uint8_t **done_buffer_pp)
     HAL_LTDC_SetAddress(&g_ltdc_handle, (uint32_t)*done_buffer_pp, DISP_EMU_LAYER);
 
     /* And shift buffer */
-    if((uint32_t)*done_buffer_pp == g_memory_addr_a[MEM_ADDR_BUFFER1])
+    if((uint32_t)*done_buffer_pp == g_memory_addr_a[DRV_LTDC_ADDR_BUFFER1])
     {
-        *done_buffer_pp = (uint8_t *)g_memory_addr_a[MEM_ADDR_BUFFER2];
+        *done_buffer_pp = (uint8_t *)g_memory_addr_a[DRV_LTDC_ADDR_BUFFER2];
     }
     else
     {
-        *done_buffer_pp = (uint8_t *)g_memory_addr_a[MEM_ADDR_BUFFER1];
+        *done_buffer_pp = (uint8_t *)g_memory_addr_a[DRV_LTDC_ADDR_BUFFER1];
     }
 
     drv_led_toggle_green();
@@ -263,7 +264,21 @@ void drv_ltdc_disable_clut(uint8_t layer)
 
 void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 {
-    dev_term_printf(DEV_TERM_PRINT_TYPE_WARNING, "HAL LTDC error!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
+    switch((uint32_t)hltdc->ErrorCode)
+    {
+        case HAL_LTDC_ERROR_NONE:
+            break;
+        case HAL_LTDC_ERROR_TE:
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC error (transfer error)");
+            break;
+        case HAL_LTDC_ERROR_FU:
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC error (fifo underrun)");
+            break;
+        case HAL_LTDC_ERROR_TIMEOUT:
+            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC error (timeout error)");
+            break;
+    }
+
     __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_TE);
     __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_FU);
     hltdc->State = HAL_LTDC_STATE_READY;
@@ -272,6 +287,6 @@ void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 
 void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc)
 {
-    dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "HAL LTDC line callback!", __FILE__, __LINE__, (uint32_t)hltdc->ErrorCode);
+    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC line callback!");
     //HAL_LTDC_ProgramLineEvent(hltdc, 200);
 }

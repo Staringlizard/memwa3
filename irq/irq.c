@@ -44,7 +44,7 @@
 #include "drv_sidbus.h"
 #include "drv_joyst.h"
 #include "drv_timer.h"
-#include "tda19988.h"
+#include "dev_tda19988.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

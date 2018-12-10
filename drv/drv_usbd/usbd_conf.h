@@ -35,7 +35,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx.h"  /* replace 'stm32xxx' with your HAL driver header filename, ex: stm32f4xx.h */
-#include "dev_term.h"
+#include "serv_term.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,20 +85,20 @@
 
 /* DEBUG macros */
 #if (USBH_DEBUG_LEVEL > 0)
-#define USBD_UsrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
+#define USBD_UsrLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, __VA_ARGS__);
 #else
 #define USBD_UsrLog(...)
 #endif
 
 #if (USBH_DEBUG_LEVEL > 1)
 
-#define USBD_ErrLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
+#define USBD_ErrLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, __VA_ARGS__);
 #else
 #define USBD_ErrLog(...)
 #endif
 
 #if (USBH_DEBUG_LEVEL > 2)
-#define USBD_DbgLog(...)   dev_term_printf(DEV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
+#define USBD_DbgLog(...)   serv_term_printf(SERV_TERM_PRINT_TYPE_DEBUG, __VA_ARGS__);
 #else
 #define USBD_DbgLog(...)
 #endif

@@ -28,8 +28,9 @@
 
 #include "drv_sidbus.h"
 #include "stm32h7xx_hal_gpio.h"
-#include "hal_msp.h"
+#include "hal_conf.h"
 #include "drv_rng.h"
+#include "drv_led.h"
 
 typedef enum
 {

@@ -26,7 +26,7 @@
 #define _DRV_I2C_H
 
 #include "stm32h7xx_hal.h"
-#include "dev_term.h"
+#include "serv_term.h"
 
 typedef enum
 {
@@ -45,5 +45,6 @@ i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val);
 i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val);
 i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value);
 i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, i2c_op_t op);
+i2c_status_t drv_i2c_rd_blk(uint8_t addr, uint8_t reg, uint8_t *buf_p, uint8_t len);
 
 #endif

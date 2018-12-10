@@ -25,12 +25,7 @@
 #define _MAIN_H
 
 #include "stm32h7xx_hal.h"
-#include "dev_term.h"
+#include "serv_term.h"
 #include <stdio.h>
-
-/* This must ALWAYS be uppdated for every release */
-#define FW_REVISION             "V1.0.7"
-
-char *main_get_fw_revision();
 
 #endif

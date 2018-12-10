@@ -32,6 +32,7 @@
 #include "romcc.h"
 #include "ff.h"
 #include "if.h"
+#include "version.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -308,11 +309,11 @@ static void draw_char(char character, uint32_t xpos, uint32_t ypos)
     {
       if((bitmap >> (7 - bit_counter)) & 0x1)
       {
-        temp_color = DISP_COLOR_TEXT_FG;
+        temp_color = LTDC_COLOR_TEXT_FG;
       }
       else
       {
-        temp_color = DISP_COLOR_TEXT_BG;
+        temp_color = LTDC_COLOR_TEXT_BG;
       }
       g_drawing_area_p[(ypos + row) * SCREEN_WIDTH + (xpos + pixel)] = temp_color;
       bit_counter++;
@@ -386,7 +387,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(res != FR_OK)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot open bitmap file!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Cannot open bitmap file!");
     }
 
     /* Get file header */
@@ -394,13 +395,13 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != sizeof(bitmap_file_header_t))
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!");
     }
 
     /* Check so that file is bitmap */
     if(bitmap_p->bitmap_file_header.type !=0x4D42)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Only bitmap files are supported!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Only bitmap files are supported!");
     }
 
     /* Get the info header */
@@ -408,7 +409,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != sizeof(bitmap_info_header_t))
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!");
     }
 
     /* Go to bitmap data */
@@ -418,7 +419,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bitmap_p->data_p == NULL)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Malloc problems!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Malloc problems!");
     }
 
     /* Get bitmap data */
@@ -426,7 +427,7 @@ static bitmap_t *load_bitmap(icon_t icon)
 
     if(bytes_read != bitmap_p->bitmap_info_header.size_image)
     {
-        dev_term_printf(DEV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!", __FILE__, __LINE__, 0);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Cannot read bitmap file!");
     }
 
     return bitmap_p;
@@ -579,7 +580,7 @@ static void prepare_menu()
 
     drv_ltdc_disable_clut(0);
 
-    drv_ltdc_fill_layer(1, DISP_COLOR_MARKER);
+    drv_ltdc_fill_layer(1, LTDC_COLOR_MARKER);
 
     draw_icons();
 
@@ -620,7 +621,7 @@ static void prepare_file_select()
                    LTDC_PIXEL_FORMAT_L8);
 
     draw_filenames();
-    drv_ltdc_fill_layer(1, DISP_COLOR_MARKER);
+    drv_ltdc_fill_layer(1, LTDC_COLOR_MARKER);
     drv_ltdc_activate_layer(1);
 }
 
@@ -992,7 +993,7 @@ void stage_draw_char(char character, uint32_t xpos, uint32_t ypos)
 
 void stage_draw_fw()
 {
-    draw_string(main_get_fw_revision(), XPOS_FW_STRING - strlen(main_get_fw_revision())*8, YPOS_FW_STRING);
+    draw_string(FW_VERSION, XPOS_FW_STRING - strlen(FW_VERSION)*8, YPOS_FW_STRING);
 }
 
 char *stage_get_selected_filename()
