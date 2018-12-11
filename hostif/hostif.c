@@ -39,10 +39,8 @@
 #include "romcc.h"
 #include "drv_ltdc.h"
 #include "ff.h"
-#include "stage.h"
 #include "drv_crc.h"
 #include "drv_sidbus.h"
-#include "sm.h"
 
 uint32_t *if_host_filesys_open(char *path_p, uint8_t mode);
 void if_host_filesys_close(uint32_t *fd_p);
@@ -233,9 +231,9 @@ void if_host_print(char *string_p, print_type_t print_type)
         break;
     case PRINT_TYPE_ERROR:
         serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "%s\n", string_p);
-        stage_set_message(string_p);
-        stage_draw_info(INFO_PRINT, 0);
-        sm_error_occured();
+        //stage_set_message(string_p);
+        //stage_draw_info(INFO_PRINT, 0);
+        //sm_error_occured();
         break;
     case PRINT_TYPE_DEBUG:
         serv_term_printf(SERV_TERM_PRINT_TYPE_DEBUG, "%s\n", string_p);
@@ -245,18 +243,18 @@ void if_host_print(char *string_p, print_type_t print_type)
 
 void if_host_stats_fps(uint8_t fps)
 {
-    if(sm_get_ltdc_stats_flag())
+    /*if(sm_get_ltdc_stats_flag())
     {
         stage_draw_info(INFO_FPS, fps);
-    }
+    }*/
 }
 
 void if_host_stats_led(uint8_t led)
 {
-    if(sm_get_ltdc_stats_flag())
+    /*if(sm_get_ltdc_stats_flag())
     {
         stage_draw_info(INFO_DISK_LED, led);
-    }
+    }*/
 }
 
 uint32_t if_host_calc_checksum(uint8_t *buffer_p, uint32_t length)
@@ -309,13 +307,13 @@ void if_host_disp_flip(uint8_t **done_buffer_pp)
 
 void if_host_ee_tape_play(uint8_t play)
 {
-    sm_tape_play(play);
+    //sm_tape_play(play);
 }
 
 void if_host_ee_tape_motor(uint8_t motor)
 {
-    if(sm_get_ltdc_stats_flag())
+    /*if(sm_get_ltdc_stats_flag())
     {
         stage_draw_info(INFO_TAPE_MOTOR, motor);
-    }
+    }*/
 }

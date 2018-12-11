@@ -39,11 +39,9 @@
 #include "drv_led.h"
 #include "drv_sdcard.h"
 #include "if.h"
+#include "fsm.h"
 #include "romcc.h"
 #include "romdd.h"
-#include "stage.h"
-
-#include "sm.h"
 #include "serv_mem.h"
 #include "serv_audio.h"
 #include "serv_video.h"
@@ -93,10 +91,8 @@ int main()
     }
 */
     serv_storage_read();
+    serv_video_en();
 
-    stage_init(CC_STAGE_FILES_ADDR);
-    stage_select_layer(0);
-
-    sm_init();
-    sm_run();
+    fsm_init();
+    fsm_run();
 }

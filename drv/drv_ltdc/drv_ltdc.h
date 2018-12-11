@@ -27,7 +27,10 @@
 #include "stm32h7xx_hal.h"
 #include "serv_term.h"
 
+/* Mem for 1 background layer */
 #define DRV_LTDC_ADDR_BUFFER0    0
+
+/* Mem for 2 emu layers */
 #define DRV_LTDC_ADDR_BUFFER1    1
 #define DRV_LTDC_ADDR_BUFFER2    2
 
@@ -74,6 +77,7 @@ void drv_ltdc_set_layer(uint8_t layer,
                     uint32_t pixel_format);
 void drv_ltdc_activate_layer(uint8_t layer);
 void drv_ltdc_deactivate_layer(uint8_t layer);
+void drv_ltdc_set_alpha(uint8_t layer, uint8_t alpha);
 void drv_ltdc_fill_layer(uint8_t layer, uint32_t color);
 void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y);
 void drv_ltdc_flip_buffer(uint8_t **done_buffer_pp);

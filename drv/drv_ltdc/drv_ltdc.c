@@ -201,6 +201,11 @@ void drv_ltdc_deactivate_layer(uint8_t layer)
     __HAL_LTDC_RELOAD_CONFIG(&g_ltdc_handle);
 }
 
+void drv_ltdc_set_alpha(uint8_t layer, uint8_t alpha)
+{
+    HAL_LTDC_SetAlpha(&g_ltdc_handle, alpha, layer);
+}
+
 void drv_ltdc_fill_layer(uint8_t layer, uint32_t color)
 {
     uint32_t i;

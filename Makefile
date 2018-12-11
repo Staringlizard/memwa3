@@ -133,7 +133,6 @@ TARGET_LINK_FILES := \
 	./out_target/hal_conf.o \
 	./out_target/hal_msp.o \
 	./out_target/serv_term.o \
-	./out_target/stage.o \
 	./out_target/diag.o \
 	./out_target/usbh_conf.o \
 	./out_target/usbd_cdc_if.o \
@@ -185,7 +184,7 @@ TARGET_LINK_FILES := \
 	./out_target/ccsbcs.o \
 	./out_target/hostif.o \
 	./out_target/main.o \
-	./out_target/sm.o \
+	./out_target/fsm.o \
 	./out_target/romcc.o \
 	./out_target/romdd.o
 
@@ -250,7 +249,6 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/hal_conf.o ./hal_setup/hal_conf.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/hal_msp.o ./hal_setup/hal_msp.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_term.o ./serv/serv_term/serv_term.c
-	$(CC) $(TARGET_CFLAGS) -DSCREEN_X2 -o out_target/stage.o ./app/stage.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/diag.o ./diag/diag.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/system_stm32h7xx.o ./cmsis_boot/system_stm32h7xx.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/stm32h7xx_hal_sd.o ./hal/stm32h7xx_hal_sd.c
@@ -302,7 +300,7 @@ $(TARGET):
 	$(CC) $(TARGET_CFLAGS) -o out_target/ccsbcs.o ./mware/fatfs/ccsbcs.c
 	$(CC) $(TARGET_CFLAGS) -DUSE_CRC -o out_target/hostif.o ./hostif/hostif.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/main.o ./app/main.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/sm.o ./app/sm.c
+	$(CC) $(TARGET_CFLAGS) -o out_target/fsm.o ./app/fsm.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/romcc.o ./rom/romcc.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/romdd.o ./rom/romdd.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/startup_stm32h743xx.o ./cmsis_boot/startup/startup_stm32h743xx.s
