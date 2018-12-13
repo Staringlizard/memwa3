@@ -363,8 +363,8 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
   {
   case HID_INIT:
     HID_Handle->Init(phost);
-    HID_Handle->state = HID_SYNC; /* Memwa2 modification */
-    break; /* Memwa2 modification */
+    HID_Handle->state = HID_SYNC; /* Memwa modification */
+    break; /* Memwa modification */
   case HID_IDLE:
     if(USBH_HID_GetReport (phost,
                            0x01,

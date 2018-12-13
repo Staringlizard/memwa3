@@ -29,15 +29,16 @@
 
 #include "hostif.h"
 #include "drv_rng.h"
+#include "drv_led.h"
 #include "hal_msp.h"
 #include "diag.h"
 #include "usbh_core.h"
 #include "usbh_hid_keybd.h"
 #include "serv_term.h"
 #include "serv_keybd.h"
+#include "serv_video.h"
 #include "if.h"
 #include "romcc.h"
-#include "drv_ltdc.h"
 #include "ff.h"
 #include "drv_crc.h"
 #include "drv_sidbus.h"
@@ -302,7 +303,8 @@ void if_host_ports_write_serial(if_emu_dev_t if_emu_dev, uint8_t data)
 
 void if_host_disp_flip(uint8_t **done_buffer_pp)
 {
-    drv_ltdc_flip_buffer(done_buffer_pp);
+    serv_video_flip_buffer(done_buffer_pp);
+    drv_led_toggle_green();
 }
 
 void if_host_ee_tape_play(uint8_t play)

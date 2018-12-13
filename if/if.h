@@ -33,30 +33,30 @@
 #define IF_MEMORY_DD_DOS_ACTUAL_SIZE        0x4000
 
 
+#define IF_MEMORY_CC_SCREEN_BUFFER0_SIZE    0x100000
 #define IF_MEMORY_CC_SCREEN_BUFFER1_SIZE    0x100000
 #define IF_MEMORY_CC_SCREEN_BUFFER2_SIZE    0x100000
-#define IF_MEMORY_CC_SCREEN_BUFFER3_SIZE    0x100000
 #define IF_MEMORY_CC_RAM_SIZE               0x10000
 #define IF_MEMORY_CC_KROM_SIZE              0x10000
 #define IF_MEMORY_CC_BROM_SIZE              0x10000
 #define IF_MEMORY_CC_CROM_SIZE              0x10000
 #define IF_MEMORY_CC_IO_SIZE                0x10000
+#define IF_MEMORY_CC_UTIL0_SIZE             0x40000
 #define IF_MEMORY_CC_UTIL1_SIZE             0x40000
-#define IF_MEMORY_CC_UTIL2_SIZE             0x40000
+#define IF_MEMORY_CC_SPRITE0_SIZE           0x40000
 #define IF_MEMORY_CC_SPRITE1_SIZE           0x40000
 #define IF_MEMORY_CC_SPRITE2_SIZE           0x40000
-#define IF_MEMORY_CC_SPRITE3_SIZE           0x40000
 #define IF_MEMORY_CC_STAGE_FILES_SIZE       0x100000
 
 #define IF_MEMORY_DD_ALL_SIZE               0x10000
+#define IF_MEMORY_DD_UTIL0_SIZE             0x40000
 #define IF_MEMORY_DD_UTIL1_SIZE             0x40000
-#define IF_MEMORY_DD_UTIL2_SIZE             0x40000
 
 typedef enum
 {
+    IF_DISPLAY_LAYER_BUFFER0, /* Size = 0x100000 (800x600x2) */
     IF_DISPLAY_LAYER_BUFFER1, /* Size = 0x100000 (800x600x2) */
-    IF_DISPLAY_LAYER_BUFFER2, /* Size = 0x100000 (800x600x2) */
-    IF_DISPLAY_LAYER_BUFFER3 /* Size = 0x100000 (800x600x2) */
+    IF_DISPLAY_LAYER_BUFFER2 /* Size = 0x100000 (800x600x2) */
 } if_display_layer_t;
 
 typedef enum
@@ -109,11 +109,11 @@ typedef enum
     IF_MEM_CC_TYPE_BROM,      /* Size = 0x10000 */
     IF_MEM_CC_TYPE_CROM,      /* Size = 0x10000 */
     IF_MEM_CC_TYPE_IO,        /* Size = 0x10000 */
+    IF_MEM_CC_TYPE_UTIL0,     /* Size = 0x40000 */
     IF_MEM_CC_TYPE_UTIL1,     /* Size = 0x40000 */
-    IF_MEM_CC_TYPE_UTIL2,     /* Size = 0x40000 */
+    IF_MEM_CC_TYPE_SPRITE0,   /* Size = 0x40000 */
     IF_MEM_CC_TYPE_SPRITE1,   /* Size = 0x40000 */
-    IF_MEM_CC_TYPE_SPRITE2,   /* Size = 0x40000 */
-    IF_MEM_CC_TYPE_SPRITE3    /* Size = 0x20000 */
+    IF_MEM_CC_TYPE_SPRITE2    /* Size = 0x20000 */
 } if_mem_cc_type_t;
 
 typedef struct
@@ -206,8 +206,8 @@ typedef struct
 typedef enum
 {
     IF_MEM_DD_TYPE_ALL,       /* Size = 0x10000 */
+    IF_MEM_DD_TYPE_UTIL0,     /* Size = 0x50000 */
     IF_MEM_DD_TYPE_UTIL1,     /* Size = 0x50000 */
-    IF_MEM_DD_TYPE_UTIL2,     /* Size = 0x50000 */
 } if_mem_dd_type_t;
 
 typedef void (*if_emu_dd_mem_set_t)(uint8_t *mem_p, if_mem_dd_type_t if_mem_type);
@@ -257,8 +257,8 @@ typedef struct
 
 typedef enum
 {
-    IF_EMU_DEV_CC, /* Commodore Computer (c64) */
-    IF_EMU_DEV_DD, /* Disk Drive (1541) */
+    IF_EMU_DEV_CC, /* Commodore Computer */
+    IF_EMU_DEV_DD, /* Disk Drive */
 } if_emu_dev_t;
 
 typedef enum

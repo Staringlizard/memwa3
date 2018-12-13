@@ -228,7 +228,7 @@ $(TARGET):
 	@echo Compiling target...
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_video.o ./serv/serv_video/serv_video.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_mem.o ./serv/serv_mem/serv_mem.c
-	$(CC) $(TARGET_CFLAGS) -o out_target/serv_storage.o ./serv/serv_storage/serv_storage.c
+	$(CC) $(TARGET_CFLAGS) -DUSE_LFN -o out_target/serv_storage.o ./serv/serv_storage/serv_storage.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_audio.o ./serv/serv_audio/serv_audio.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_keybd.o ./serv/serv_keybd/serv_keybd.c
 	$(CC) $(TARGET_CFLAGS) -o out_target/serv_misc.o ./serv/serv_misc/serv_misc.c

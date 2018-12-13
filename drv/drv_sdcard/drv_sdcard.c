@@ -41,7 +41,7 @@ void drv_sdcard_init()
     g_sd_handle.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
     g_sd_handle.Init.BusWide = SDMMC_BUS_WIDE_4B;
     g_sd_handle.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
-    g_sd_handle.Init.ClockDiv = 4; /* Gives 25Mhz clk */
+    g_sd_handle.Init.ClockDiv = 4; /* 4 Gives 25Mhz clk */
     res = HAL_SD_Init(&g_sd_handle);
 
     if(res != HAL_SD_ERROR_NONE)

@@ -90,7 +90,7 @@ int main()
         }
     }
 */
-    serv_storage_read();
+    serv_storage_read_config();
     serv_video_en();
 
     fsm_init();

@@ -27,12 +27,12 @@
 #include "stm32h7xx_hal.h"
 #include "serv_term.h"
 
-/* Mem for 1 background layer */
-#define DRV_LTDC_ADDR_BUFFER0    0
-
-/* Mem for 2 emu layers */
-#define DRV_LTDC_ADDR_BUFFER1    1
-#define DRV_LTDC_ADDR_BUFFER2    2
+typedef enum
+{
+    DRV_LTDC_BUFFER_0,
+    DRV_LTDC_BUFFER_1,
+    DRV_LTDC_BUFFER_2
+} drv_ltdc_buffer_t;
 
 typedef enum
 {
@@ -65,7 +65,7 @@ typedef enum
 
 void drv_ltdc_init(ltdc_mode_t ltdc_mode);
 void *drv_ltdc_get_layer(uint8_t layer);
-void drv_ltdc_set_memory(uint8_t layer, uint32_t memory);
+void drv_ltdc_set_memory(uint8_t buffer, uint32_t memory);
 void drv_ltdc_set_layer(uint8_t layer,
                     uint32_t window_x0,
                     uint32_t window_x1,
@@ -78,11 +78,13 @@ void drv_ltdc_set_layer(uint8_t layer,
 void drv_ltdc_activate_layer(uint8_t layer);
 void drv_ltdc_deactivate_layer(uint8_t layer);
 void drv_ltdc_set_alpha(uint8_t layer, uint8_t alpha);
+void drv_ltdc_set_trans_color(uint8_t layer, uint8_t color);
 void drv_ltdc_fill_layer(uint8_t layer, uint32_t color);
 void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y);
-void drv_ltdc_flip_buffer(uint8_t **done_buffer_pp);
+void drv_ltdc_flip_buffer(uint8_t layer, uint8_t *buffer_p);
 void drv_ltdc_set_clut_table(uint32_t *clut_p);
 void drv_ltdc_enable_clut(uint8_t layer);
 void drv_ltdc_disable_clut(uint8_t layer);
+drv_ltdc_buffer_t drv_ltdc_get_buffer(uint8_t *buffer_p);
 
 #endif

@@ -49,19 +49,16 @@
 #define SVGA_VBP    ((uint16_t)23)
 #define SVGA_VFP    ((uint16_t)1)
 
-#define DISP_MAIN_LAYER       0
-#define DISP_EMU_LAYER        1
-
 #define CLUT_TEXT_BG_POS      16
 #define CLUT_TEXT_FG_POS      17
 #define CLUT_MARKER_POS       18
 #define CLUT_MAX              19
 
 LTDC_HandleTypeDef g_ltdc_handle; /* used by irq.c */
-static LTDC_LayerCfgTypeDef g_ltdc_layer_cfg_a[2];
-static uint32_t g_memory_addr_a[3];
+static LTDC_LayerCfgTypeDef g_ltdc_layer_cfg_p[2];
+static uint32_t g_memory_addr_p[3];
 
-static uint32_t clut_a[CLUT_MAX] =
+static uint32_t clut_p[CLUT_MAX] =
 {
     0x000000, /* black */
     0xFFFFFF, /* white */
@@ -139,8 +136,8 @@ void drv_ltdc_init(ltdc_mode_t ltdc_mode)
 
     HAL_LTDC_Init(&g_ltdc_handle);
 
-    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_a, CLUT_MAX, 0);
-    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_a, CLUT_MAX, 1);
+    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_p, CLUT_MAX, 0);
+    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_p, CLUT_MAX, 1);
 
     HAL_LTDC_EnableCLUT(&g_ltdc_handle, 0);
     HAL_LTDC_EnableCLUT(&g_ltdc_handle, 1);
@@ -154,9 +151,9 @@ void *drv_ltdc_get_layer(uint8_t layer)
     return (void *)(g_ltdc_handle.LayerCfg[layer].FBStartAdress);
 }
 
-void drv_ltdc_set_memory(uint8_t layer, uint32_t memory)
+void drv_ltdc_set_memory(uint8_t buffer, uint32_t memory)
 {
-    g_memory_addr_a[layer] = memory;
+    g_memory_addr_p[buffer] = memory;
 }
 
 void drv_ltdc_set_layer(uint8_t layer,
@@ -170,23 +167,32 @@ void drv_ltdc_set_layer(uint8_t layer,
                     uint32_t pixel_format)
 {
     /* Layer Init */
-    g_ltdc_layer_cfg_a[layer].WindowX0 = window_x0;
-    g_ltdc_layer_cfg_a[layer].WindowX1 = window_x1;
-    g_ltdc_layer_cfg_a[layer].WindowY0 = window_y0;
-    g_ltdc_layer_cfg_a[layer].WindowY1 = window_y1;
-    g_ltdc_layer_cfg_a[layer].Alpha = alpha;
-    g_ltdc_layer_cfg_a[layer].Alpha0 = 0;
-    g_ltdc_layer_cfg_a[layer].Backcolor.Blue = 0;
-    g_ltdc_layer_cfg_a[layer].Backcolor.Green = 0;
-    g_ltdc_layer_cfg_a[layer].Backcolor.Red = 0;
-    g_ltdc_layer_cfg_a[layer].BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
-    g_ltdc_layer_cfg_a[layer].BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-    g_ltdc_layer_cfg_a[layer].ImageWidth = buffer_x;
-    g_ltdc_layer_cfg_a[layer].ImageHeight = buffer_y;
-    g_ltdc_layer_cfg_a[layer].PixelFormat = pixel_format;
-    g_ltdc_layer_cfg_a[layer].FBStartAdress = g_memory_addr_a[layer];
+    g_ltdc_layer_cfg_p[layer].WindowX0 = window_x0;
+    g_ltdc_layer_cfg_p[layer].WindowX1 = window_x1;
+    g_ltdc_layer_cfg_p[layer].WindowY0 = window_y0;
+    g_ltdc_layer_cfg_p[layer].WindowY1 = window_y1;
+    g_ltdc_layer_cfg_p[layer].Alpha = alpha;
+    g_ltdc_layer_cfg_p[layer].Alpha0 = 0;
+    g_ltdc_layer_cfg_p[layer].Backcolor.Blue = 0;
+    g_ltdc_layer_cfg_p[layer].Backcolor.Green = 0;
+    g_ltdc_layer_cfg_p[layer].Backcolor.Red = 0;
+    g_ltdc_layer_cfg_p[layer].BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
+    g_ltdc_layer_cfg_p[layer].BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
+    g_ltdc_layer_cfg_p[layer].ImageWidth = buffer_x;
+    g_ltdc_layer_cfg_p[layer].ImageHeight = buffer_y;
+    g_ltdc_layer_cfg_p[layer].PixelFormat = pixel_format;
 
-    HAL_LTDC_ConfigLayer(&g_ltdc_handle, &g_ltdc_layer_cfg_a[layer], layer);
+    if(layer == 0)
+    {
+        /* First layer is double buffered (buffer 1 and 2) */
+        g_ltdc_layer_cfg_p[layer].FBStartAdress = g_memory_addr_p[0];
+    }
+    else if(layer == 1)
+    {
+        g_ltdc_layer_cfg_p[layer].FBStartAdress = g_memory_addr_p[2];
+    }
+
+    HAL_LTDC_ConfigLayer(&g_ltdc_handle, &g_ltdc_layer_cfg_p[layer], layer);
 }
 
 void drv_ltdc_activate_layer(uint8_t layer)
@@ -206,23 +212,29 @@ void drv_ltdc_set_alpha(uint8_t layer, uint8_t alpha)
     HAL_LTDC_SetAlpha(&g_ltdc_handle, alpha, layer);
 }
 
+void drv_ltdc_set_trans_color(uint8_t layer, uint8_t color)
+{
+    HAL_LTDC_ConfigColorKeying(&g_ltdc_handle, clut_p[color], layer);
+    HAL_LTDC_EnableColorKeying(&g_ltdc_handle, layer);
+}
+
 void drv_ltdc_fill_layer(uint8_t layer, uint32_t color)
 {
     uint32_t i;
 
-    for(i = 0; i < g_ltdc_layer_cfg_a[layer].ImageWidth * g_ltdc_layer_cfg_a[layer].ImageHeight; i++)
+    for(i = 0; i < g_ltdc_layer_cfg_p[layer].ImageWidth * g_ltdc_layer_cfg_p[layer].ImageHeight; i++)
     {
-        if(g_ltdc_layer_cfg_a[layer].PixelFormat == LTDC_PIXEL_FORMAT_L8)
+        if(g_ltdc_layer_cfg_p[layer].PixelFormat == LTDC_PIXEL_FORMAT_L8)
         {
-            *((uint8_t *)g_ltdc_layer_cfg_a[layer].FBStartAdress + i) = color;
+            *((uint8_t *)g_ltdc_layer_cfg_p[layer].FBStartAdress + i) = color;
         }
-        else if(g_ltdc_layer_cfg_a[layer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565)
+        else if(g_ltdc_layer_cfg_p[layer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565)
         {
-            *((uint16_t *)g_ltdc_layer_cfg_a[layer].FBStartAdress + i) = color;
+            *((uint16_t *)g_ltdc_layer_cfg_p[layer].FBStartAdress + i) = color;
         }
-        else if(g_ltdc_layer_cfg_a[layer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+        else if(g_ltdc_layer_cfg_p[layer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
         {
-            *((uint32_t *)g_ltdc_layer_cfg_a[layer].FBStartAdress + i) = color;
+            *((uint32_t *)g_ltdc_layer_cfg_p[layer].FBStartAdress + i) = color;
         }
     }
 }
@@ -232,29 +244,16 @@ void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y)
     HAL_LTDC_SetWindowPosition(&g_ltdc_handle, x, y, layer);
 }
 
-void drv_ltdc_flip_buffer(uint8_t **done_buffer_pp)
+void drv_ltdc_flip_buffer(uint8_t layer, uint8_t *buffer_p)
 {
-    /* Set layer to be displayed */
-    HAL_LTDC_SetAddress(&g_ltdc_handle, (uint32_t)*done_buffer_pp, DISP_EMU_LAYER);
-
-    /* And shift buffer */
-    if((uint32_t)*done_buffer_pp == g_memory_addr_a[DRV_LTDC_ADDR_BUFFER1])
-    {
-        *done_buffer_pp = (uint8_t *)g_memory_addr_a[DRV_LTDC_ADDR_BUFFER2];
-    }
-    else
-    {
-        *done_buffer_pp = (uint8_t *)g_memory_addr_a[DRV_LTDC_ADDR_BUFFER1];
-    }
-
-    drv_led_toggle_green();
+    HAL_LTDC_SetAddress(&g_ltdc_handle, (uint32_t)buffer_p, layer);
 }
 
 void drv_ltdc_set_clut_table(uint32_t *clut_p)
 {
-    memcpy(clut_a, clut_p, CLUT_MAX * sizeof(uint32_t));
-    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_a, CLUT_MAX, 0);
-    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_a, CLUT_MAX, 1);
+    memcpy(clut_p, clut_p, CLUT_MAX * sizeof(uint32_t));
+    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_p, CLUT_MAX, 0);
+    HAL_LTDC_ConfigCLUT(&g_ltdc_handle, clut_p, CLUT_MAX, 1);
 }
 
 void drv_ltdc_enable_clut(uint8_t layer)
@@ -265,6 +264,25 @@ void drv_ltdc_enable_clut(uint8_t layer)
 void drv_ltdc_disable_clut(uint8_t layer)
 {
     HAL_LTDC_DisableCLUT(&g_ltdc_handle, layer);
+}
+
+drv_ltdc_buffer_t drv_ltdc_get_buffer(uint8_t *buffer_p)
+{
+    /* And shift buffer */
+    if((uint32_t)buffer_p == g_memory_addr_p[DRV_LTDC_BUFFER_0])
+    {
+        return DRV_LTDC_BUFFER_0;
+    }
+    else if((uint32_t)buffer_p == g_memory_addr_p[DRV_LTDC_BUFFER_1])
+    {
+        return DRV_LTDC_BUFFER_1;
+    }
+    else if((uint32_t)buffer_p == g_memory_addr_p[DRV_LTDC_BUFFER_2])
+    {
+        return DRV_LTDC_BUFFER_2;
+    }
+
+    return DRV_LTDC_BUFFER_0;
 }
 
 void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
