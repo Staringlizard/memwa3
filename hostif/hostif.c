@@ -42,6 +42,7 @@
 #include "ff.h"
 #include "drv_crc.h"
 #include "drv_sidbus.h"
+#include "fsm.h"
 
 uint32_t *if_host_filesys_open(char *path_p, uint8_t mode);
 void if_host_filesys_close(uint32_t *fd_p);
@@ -232,9 +233,6 @@ void if_host_print(char *string_p, print_type_t print_type)
         break;
     case PRINT_TYPE_ERROR:
         serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "%s\n", string_p);
-        //stage_set_message(string_p);
-        //stage_draw_info(INFO_PRINT, 0);
-        //sm_error_occured();
         break;
     case PRINT_TYPE_DEBUG:
         serv_term_printf(SERV_TERM_PRINT_TYPE_DEBUG, "%s\n", string_p);
@@ -244,18 +242,12 @@ void if_host_print(char *string_p, print_type_t print_type)
 
 void if_host_stats_fps(uint8_t fps)
 {
-    /*if(sm_get_ltdc_stats_flag())
-    {
-        stage_draw_info(INFO_FPS, fps);
-    }*/
+    fsm_event(FSM_EVENT_STATS_FPS, fps, 0);
 }
 
 void if_host_stats_led(uint8_t led)
 {
-    /*if(sm_get_ltdc_stats_flag())
-    {
-        stage_draw_info(INFO_DISK_LED, led);
-    }*/
+    fsm_event(FSM_EVENT_STATS_LED, led, 0);
 }
 
 uint32_t if_host_calc_checksum(uint8_t *buffer_p, uint32_t length)
@@ -285,6 +277,8 @@ uint8_t if_host_ports_read_serial(if_emu_dev_t if_emu_dev)
           break;
     }
 
+    fsm_event(FSM_EVENT_SERIAL_READ, if_emu_dev, 0);
+
     return 0; /* Not used atm */
 }
 
@@ -299,6 +293,8 @@ void if_host_ports_write_serial(if_emu_dev_t if_emu_dev, uint8_t data)
             g_if_cc_emu.if_emu_cc_ports.if_emu_cc_ports_write_serial_fp(data);
             break;
     }
+
+    fsm_event(FSM_EVENT_SERIAL_WRITE, if_emu_dev, data);
 }
 
 void if_host_disp_flip(uint8_t **done_buffer_pp)
@@ -309,13 +305,10 @@ void if_host_disp_flip(uint8_t **done_buffer_pp)
 
 void if_host_ee_tape_play(uint8_t play)
 {
-    //sm_tape_play(play);
+    fsm_event(FSM_EVENT_TAPE_PLAY, play, 0);
 }
 
 void if_host_ee_tape_motor(uint8_t motor)
 {
-    /*if(sm_get_ltdc_stats_flag())
-    {
-        stage_draw_info(INFO_TAPE_MOTOR, motor);
-    }*/
+    fsm_event(FSM_EVENT_TAPE_MOTOR, motor, 0);
 }

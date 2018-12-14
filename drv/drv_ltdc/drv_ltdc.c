@@ -246,7 +246,8 @@ void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y)
 
 void drv_ltdc_flip_buffer(uint8_t layer, uint8_t *buffer_p)
 {
-    HAL_LTDC_SetAddress(&g_ltdc_handle, (uint32_t)buffer_p, layer);
+    HAL_LTDC_SetAddress_NoReload(&g_ltdc_handle, (uint32_t)buffer_p, layer);
+    HAL_LTDC_Reload(&g_ltdc_handle, LTDC_RELOAD_VERTICAL_BLANKING);
 }
 
 void drv_ltdc_set_clut_table(uint32_t *clut_p)
@@ -308,7 +309,7 @@ void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
     hltdc->ErrorCode = HAL_LTDC_ERROR_NONE;
 }
 
-void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc)
+void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
 {
     serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC line callback!");
     //HAL_LTDC_ProgramLineEvent(hltdc, 200);

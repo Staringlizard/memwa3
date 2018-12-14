@@ -27,13 +27,13 @@
 
 #include "drv_timer.h"
 #include "if.h"
+#include "fsm.h"
 
 extern if_emu_cc_t g_if_cc_emu;
 
 static TIM_HandleTypeDef g_tim_handle_type;
 static uint32_t g_timer_ms;
 static uint32_t g_timer3;
-static uint8_t g_timer;
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
 {
@@ -111,15 +111,15 @@ void drv_timer_init()
 
 void drv_timer_tick()
 {
-    g_timer++;
     g_timer_ms++;
-    if(g_timer == 100)
+    if((g_timer_ms % 100) == 0)
     {
-        if(g_if_cc_emu.if_emu_cc_time.time_tenth_second_fp != NULL)
-        {
-            g_if_cc_emu.if_emu_cc_time.time_tenth_second_fp();
-        }
-        g_timer = 0;
+        fsm_event(FSM_EVENT_TIMER_100MS, 0, 0);
+    }
+    
+    if((g_timer_ms % 1000) == 0)
+    {
+        fsm_event(FSM_EVENT_TIMER_1000MS, 0, 0);
     }
 }
 

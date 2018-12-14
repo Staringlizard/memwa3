@@ -55,7 +55,7 @@ void drv_sdram_init()
     g_fmc_sdram_timing.LoadToActiveDelay    = 1;
     g_fmc_sdram_timing.ExitSelfRefreshDelay = 1;
     g_fmc_sdram_timing.SelfRefreshTime      = 1;
-    g_fmc_sdram_timing.RowCycleDelay        = 5;
+    g_fmc_sdram_timing.RowCycleDelay        = 6;
     g_fmc_sdram_timing.WriteRecoveryTime    = 1;
     g_fmc_sdram_timing.RPDelay              = 2;
     g_fmc_sdram_timing.RCDDelay             = 2;
