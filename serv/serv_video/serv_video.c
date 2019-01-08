@@ -30,8 +30,8 @@
 #define SCREEN_X2
 #define SCREEN_WIDTH            SERV_VIDEO_SCREEN_WIDTH
 #define SCREEN_HEIGHT           SERV_VIDEO_SCREEN_HEIGHT
-#define MENU_WIDTH              SERV_VIDEO_MENU_WIDTH
-#define MENU_HEIGHT             SERV_VIDEO_MENU_HEIGHT
+#define MENU_WIDTH              SERV_VIDEO_MISC_WIDTH
+#define MENU_HEIGHT             SERV_VIDEO_MISC_HEIGHT
 #define UPPER_BORDER            32
 #define LOWER_BORDER            50
 #define LEFT_BORDER             44
@@ -52,9 +52,9 @@
 #define FONT_WIDTH              SERV_VIDEO_FONT_WIDTH
 #define ROW_HEIGHT              SERV_VIDEO_ROW_HEIGHT
 
-#define BAR_WIDTH               SERV_VIDEO_MENU_WIDTH
+#define BAR_WIDTH               SERV_VIDEO_MISC_WIDTH
 
-#define LAYER_MENU              SERV_VIDEO_LAYER_MISC
+#define LAYER_MISC              SERV_VIDEO_LAYER_MISC
 #define LAYER_EMU               SERV_VIDEO_LAYER_EMU
 
 extern tda19988_vm_t videomode_list[];
@@ -184,14 +184,14 @@ void serv_video_init()
     drv_ltdc_init(LTDC_MODE_SVGA);
 
     /* Careful here so that the bus does not overload */
-    drv_ltdc_set_layer(LAYER_MENU,
+    drv_ltdc_set_layer(LAYER_MISC,
         SCREEN_WIDTH/2 - MENU_WIDTH/2,
         SCREEN_WIDTH/2 + MENU_WIDTH/2,
         0,
         MENU_HEIGHT,
         MENU_WIDTH,
         MENU_HEIGHT,
-        g_alpha[LAYER_MENU],
+        g_alpha[LAYER_MISC],
         LTDC_PIXEL_FORMAT_L8);
 
 #ifdef SCREEN_X2
@@ -216,25 +216,25 @@ void serv_video_init()
         LTDC_PIXEL_FORMAT_L8);
 #endif
 
-    drv_ltdc_deactivate_layer(LAYER_MENU);
+    drv_ltdc_deactivate_layer(LAYER_MISC);
     drv_ltdc_deactivate_layer(LAYER_EMU);
-    drv_ltdc_fill_layer(LAYER_MENU, COLOR_BG);
+    drv_ltdc_fill_layer(LAYER_MISC, COLOR_BG);
     drv_ltdc_fill_layer(LAYER_EMU, 0);
 
-    drv_ltdc_set_trans_color(LAYER_MENU, COLOR_TRANS);
+    drv_ltdc_set_trans_color(LAYER_MISC, COLOR_TRANS);
 
 	g_if_cc_emu.if_emu_cc_display.display_layer_set_fp((uint8_t *)CC_DISP_BUFFER0_ADDR);
 }
 
 void serv_video_en()
 {
-    drv_ltdc_deactivate_layer(LAYER_MENU);
+    drv_ltdc_deactivate_layer(LAYER_MISC);
     drv_ltdc_deactivate_layer(LAYER_EMU);
 
-    drv_ltdc_enable_clut(LAYER_MENU);
+    drv_ltdc_enable_clut(LAYER_MISC);
     drv_ltdc_enable_clut(LAYER_EMU);
 
-    drv_ltdc_activate_layer(LAYER_MENU);
+    drv_ltdc_activate_layer(LAYER_MISC);
     drv_ltdc_activate_layer(LAYER_EMU);
 }
 
@@ -310,12 +310,23 @@ void serv_video_draw_text(uint8_t layer, uint8_t fg, uint8_t bg, char *txt_p, ui
     uint32_t line;
     uint8_t *canvas_p;
 
-    canvas_p = drv_ltdc_get_layer(LAYER_MENU);
+    /* No need to draw outside of screen */
+    if(y > MENU_HEIGHT)
+    {
+        return;
+    }
+
+    canvas_p = drv_ltdc_get_layer(LAYER_MISC);
 
     while(txt_p[cnt] != '\0')
     {
         bmap_pp[cnt] = g_font[txt_p[cnt] - 0x20];
         cnt++;
+
+        if(cnt >= 256)
+        {
+            break;
+        }
     }
 
     for(line = 0; line < FONT_HEIGHT; line++)
@@ -369,7 +380,7 @@ void serv_video_draw_load_bar(uint32_t percent)
         lines_to_render = lines_total - g_current_bar_lines;
     }
 
-    canvas_p = drv_ltdc_get_layer(LAYER_MENU);
+    canvas_p = drv_ltdc_get_layer(LAYER_MISC);
 
     for(i = g_current_bar_lines; i < (lines_to_render + g_current_bar_lines); i++)
     {
@@ -387,7 +398,7 @@ void serv_video_draw_load_proc()
     uint8_t *canvas_p;
     uint32_t rnd = drv_rng_get();
 
-    canvas_p = drv_ltdc_get_layer(LAYER_MENU);
+    canvas_p = drv_ltdc_get_layer(LAYER_MISC);
 
     rnd %= MENU_WIDTH*MENU_HEIGHT;
 

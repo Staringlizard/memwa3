@@ -29,6 +29,7 @@
  */
 
 #include "serv_term.h"
+#include "fsm.h"
 #include "drv_i2c.h"
 #include "dev_tda19988.h"
 #include "usbd_core.h"
@@ -39,9 +40,11 @@
 #define STDOUT_FILENO 	1
 #define STDERR_FILENO 	2
 
-#define KEY_DEL         0x7F
-
-#define IPSR_THREADED_MODE      0x01
+#define KEY_DEL             0x7F
+#define IPSR_THREADED_MODE  0x01
+#define TERM_ROW_MAX        4000
+#define TERM_RAW_MAX        1024
+#define TERM_CMD_MAX        128
 
 USBD_HandleTypeDef g_usbd_device;
 extern USBD_DescriptorsTypeDef VCP_Desc;
@@ -76,9 +79,14 @@ static char *g_term_help_p = "[i2c_cec_r <reg>], read tda19988 register\r" \
                              "[mem_r <addr>], read memory address\r" \
                              "[mem_w <addr> <val>], write to memory address\r";
 
-static uint8_t g_cmd_input_str_a[128] = "";
+static char g_cmd_input_str_p[TERM_CMD_MAX];
 static uint8_t g_cmd_input_cnt = 0;
 static char g_delimiter_a[2] = " ";
+static uint32_t g_term_text_cnt;
+static char *g_term_text_rows_pp[TERM_ROW_MAX];
+static uint32_t g_term_text_row_cnt;
+static char *g_raw_text_p;
+static uint32_t g_raw_text_cnt;
 
 static uint32_t term_atoi(char *str_p)
 {
@@ -239,42 +247,42 @@ static void receive(uint8_t *buf, uint32_t len)
         }
     }
 
-    if((g_cmd_input_cnt + len) >= 128)
+    if((g_cmd_input_cnt + len) >= TERM_CMD_MAX)
     {
         printf("command too long, buffer reset!");
-        memset(g_cmd_input_str_a, 0x00, 128);
+        memset(g_cmd_input_str_p, 0x00, TERM_CMD_MAX);
         g_cmd_input_cnt = 0;
         return;
     }
 
-    memcpy(g_cmd_input_str_a + g_cmd_input_cnt, buf, len);
+    memcpy(g_cmd_input_str_p + g_cmd_input_cnt, buf, len);
 
     g_cmd_input_cnt += len;
 
     for(i = 0; i < g_cmd_input_cnt; i++)
     {
-        if(g_cmd_input_str_a[i] == '\r')
+        if(g_cmd_input_str_p[i] == '\r')
         {
             uint32_t j;
 
             /* Remove CR and NL */
-            while(g_cmd_input_str_a[g_cmd_input_cnt - 1] == '\n' ||
-                  g_cmd_input_str_a[g_cmd_input_cnt - 1] == '\r')
+            while(g_cmd_input_str_p[g_cmd_input_cnt - 1] == '\n' ||
+                  g_cmd_input_str_p[g_cmd_input_cnt - 1] == '\r')
             {
-                g_cmd_input_str_a[g_cmd_input_cnt - 1] = '\0';
+                g_cmd_input_str_p[g_cmd_input_cnt - 1] = '\0';
                 g_cmd_input_cnt--;
             }
 
             /* Fix backspaces if any */
             for(j = 0; j < g_cmd_input_cnt; j++)
             {
-                if(g_cmd_input_str_a[j] == KEY_DEL)
+                if(g_cmd_input_str_p[j] == KEY_DEL)
                 {
                     uint32_t k;
 
                     for(k = j; k < g_cmd_input_cnt; k++)
                     {
-                        g_cmd_input_str_a[k-1] = g_cmd_input_str_a[k+1];
+                        g_cmd_input_str_p[k-1] = g_cmd_input_str_p[k+1];
                     }
                     g_cmd_input_cnt -= 2; /* both backspace and the char it deleted must go */
                     j -= 2;
@@ -284,8 +292,8 @@ static void receive(uint8_t *buf, uint32_t len)
             printf("\r");
 
             /* Interpret the command */
-            interpret(g_cmd_input_str_a, g_cmd_input_cnt);
-            memset(g_cmd_input_str_a, 0x00, 128);
+            interpret(g_cmd_input_str_p, g_cmd_input_cnt);
+            memset(g_cmd_input_str_p, 0x00, TERM_CMD_MAX);
             g_cmd_input_cnt = 0;
             return;
         }
@@ -294,6 +302,35 @@ static void receive(uint8_t *buf, uint32_t len)
     /* Remote echo */
     CDC_Itf_Send((uint8_t *)buf, len);
     CDC_Itf_Flush();
+}
+
+static void clear_all_rows()
+{
+    uint32_t i;
+
+    for(i = 0; i < g_term_text_row_cnt; i++)
+    {
+        free(g_term_text_rows_pp[i]);
+        g_term_text_rows_pp[i] = NULL;
+    }
+
+    g_term_text_row_cnt = 0;
+}
+
+static void record_row(char *text_p, uint32_t len)
+{
+    if(g_term_text_row_cnt < TERM_ROW_MAX)
+    {
+        g_term_text_rows_pp[g_term_text_row_cnt] = calloc(1, len + 1);
+        memcpy(g_term_text_rows_pp[g_term_text_row_cnt], text_p, len);
+        g_term_text_row_cnt++;
+        fsm_event(FSM_EVENT_TEXT_ROW, (uint32_t)text_p, len);
+    }
+    else
+    {
+        /* TODO: perhaps just delete oldest half and then shift to beginning ? */
+        clear_all_rows();
+    }
 }
 
 void serv_term_init()
@@ -316,12 +353,41 @@ void serv_term_init()
   /* Register receive function */
   CDC_Iif_RegisterReceiveCb(receive);
 
-  memset(g_cmd_input_str_a, 0x00, 128);
+  memset(g_cmd_input_str_p, 0x00, TERM_CMD_MAX);
+
+  g_raw_text_p = calloc(1, TERM_RAW_MAX);
+}
+
+char *serv_term_get_row(uint32_t row)
+{
+    if(row < TERM_ROW_MAX)
+    {
+        return g_term_text_rows_pp[row];
+    }
+
+    return NULL;
+}
+
+uint32_t serv_term_get_rows()
+{
+    return g_term_text_row_cnt;
+}
+
+void serv_term_clear_rows()
+{
+    clear_all_rows();
 }
 
 /* So that printf() will output on this device */
 int _write(int file, char *ptr, int len)
 {
+    uint32_t i;
+
+    if(len == 0)
+    {
+        return len;
+    }
+
     switch (file)
     {
     case STDOUT_FILENO: /*stdout*/
@@ -332,6 +398,25 @@ int _write(int file, char *ptr, int len)
         break;
     default:
         return -1;
+    }
+
+    for(i = 0; i < len; i++)
+    {
+        g_raw_text_p[g_raw_text_cnt] = ptr[i];
+
+        if(g_raw_text_p[g_raw_text_cnt] == '\n' || g_raw_text_p[g_raw_text_cnt] == '\r')
+        {
+            g_raw_text_p[g_raw_text_cnt] = '\0';
+            record_row(g_raw_text_p, g_raw_text_cnt);
+            g_raw_text_cnt = 0;
+        }
+        else
+        {
+            if(g_raw_text_cnt < TERM_RAW_MAX - 1)
+            {
+                g_raw_text_cnt++;
+            }
+        }
     }
 
     /*

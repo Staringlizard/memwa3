@@ -48,12 +48,6 @@
 	printf(str, ##args); \
 	printf("\n");
 
-	    /*stage_set_message(string_p);
-	    if(sm_get_state() == SM_STATE_EMULATOR && sm_get_ltdc_stats_flag())
-	    {
-	        stage_draw_info(INFO_PRINT, 0   );
-	    }*/
-
 typedef enum
 {
 	SERV_TERM_PRINT_TYPE_INFO,
@@ -63,5 +57,8 @@ typedef enum
 } serv_term_print_type_t;
 
 void serv_term_init();
+char *serv_term_get_row(uint32_t row);
+uint32_t serv_term_get_rows();
+void serv_term_clear_rows();
 
 #endif

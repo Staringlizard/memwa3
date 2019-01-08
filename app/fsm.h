@@ -34,7 +34,8 @@ typedef enum
 	FSM_EVENT_TAPE_PLAY,
 	FSM_EVENT_TAPE_MOTOR,
 	FSM_EVENT_KEY,
-	FSM_EVENT_FADE_DONE
+	FSM_EVENT_FADE_DONE,
+	FSM_EVENT_TEXT_ROW,
 } fsm_event_t;
 
 void fsm_init();
