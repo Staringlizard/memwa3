@@ -405,7 +405,7 @@ static void trigger_edid()
 
 static char *get_monitor_name()
 {
-    uint8_t *tmp_p = (uint8_t *)&g_edid;
+    char *tmp_p = (char *)&g_edid;
     uint8_t offsets[4] = {0x36, 0x48, 0x5a, 0x6c};
     uint8_t pattern[4] = {0x00, 0x00, 0x00, 0xfc};
     uint32_t i;
@@ -428,6 +428,8 @@ static char *get_monitor_name()
         }
         match = 0;
     }
+
+    return NULL;
 }
 
 void tda19988_init()

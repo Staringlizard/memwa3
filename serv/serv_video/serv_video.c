@@ -30,8 +30,8 @@
 #define SCREEN_X2
 #define SCREEN_WIDTH            SERV_VIDEO_SCREEN_WIDTH
 #define SCREEN_HEIGHT           SERV_VIDEO_SCREEN_HEIGHT
-#define MENU_WIDTH              SERV_VIDEO_MISC_WIDTH
-#define MENU_HEIGHT             SERV_VIDEO_MISC_HEIGHT
+#define MISC_WIDTH              SERV_VIDEO_MISC_WIDTH
+#define MISC_HEIGHT             SERV_VIDEO_MISC_HEIGHT
 #define UPPER_BORDER            32
 #define LOWER_BORDER            50
 #define LEFT_BORDER             44
@@ -59,7 +59,7 @@
 
 extern tda19988_vm_t videomode_list[];
 
-static uint32_t g_current_bar_lines;
+//static uint32_t g_current_bar_lines;
 
 static uint8_t g_font[][SERV_VIDEO_FONT_WIDTH] =
 {
@@ -185,12 +185,12 @@ void serv_video_init()
 
     /* Careful here so that the bus does not overload */
     drv_ltdc_set_layer(LAYER_MISC,
-        SCREEN_WIDTH/2 - MENU_WIDTH/2,
-        SCREEN_WIDTH/2 + MENU_WIDTH/2,
+        SCREEN_WIDTH/2 - MISC_WIDTH/2,
+        SCREEN_WIDTH/2 + MISC_WIDTH/2,
         0,
-        MENU_HEIGHT,
-        MENU_WIDTH,
-        MENU_HEIGHT,
+        MISC_HEIGHT,
+        MISC_WIDTH,
+        MISC_HEIGHT,
         g_alpha[LAYER_MISC],
         LTDC_PIXEL_FORMAT_L8);
 
@@ -224,6 +224,11 @@ void serv_video_init()
     drv_ltdc_set_trans_color(LAYER_MISC, COLOR_TRANS);
 
 	g_if_cc_emu.if_emu_cc_display.display_layer_set_fp((uint8_t *)CC_DISP_BUFFER0_ADDR);
+}
+
+void serv_video_set_layer_size(uint8_t layer, uint32_t width, uint32_t height)
+{
+    drv_ltdc_change_size(layer, width, height);
 }
 
 void serv_video_en()
@@ -311,7 +316,7 @@ void serv_video_draw_text(uint8_t layer, uint8_t fg, uint8_t bg, char *txt_p, ui
     uint8_t *canvas_p;
 
     /* No need to draw outside of screen */
-    if(y > MENU_HEIGHT)
+    if(y > MISC_HEIGHT)
     {
         return;
     }
@@ -337,11 +342,11 @@ void serv_video_draw_text(uint8_t layer, uint8_t fg, uint8_t bg, char *txt_p, ui
             {
                 if(bmap_pp[i][k] & (1<<line)) /* draw pixel */
                 {
-                    canvas_p[x + k + i*FONT_WIDTH + (line + y)*MENU_WIDTH] = fg;
+                    canvas_p[x + k + i*FONT_WIDTH + (line + y)*MISC_WIDTH] = fg;
                 }
                 else
                 {
-                    canvas_p[x + k + i*FONT_WIDTH + (line + y)*MENU_WIDTH] = bg;
+                    canvas_p[x + k + i*FONT_WIDTH + (line + y)*MISC_WIDTH] = bg;
                 }
             }
         }
@@ -353,46 +358,6 @@ void serv_video_clear_layer(uint8_t layer)
     drv_ltdc_fill_layer(layer, COLOR_BG);
 }
 
-void serv_video_reset_load_bar()
-{
-    g_current_bar_lines = 0;
-}
-
-void serv_video_draw_load_bar(uint32_t percent)
-{
-    uint32_t i;
-    uint32_t j;
-    uint32_t lines_total = (BAR_WIDTH*percent)/100;
-    uint32_t lines_to_render;
-    uint8_t *canvas_p;
-
-    if(lines_total < g_current_bar_lines)
-    {
-        g_current_bar_lines = 0; /* redraw whole bar */
-        lines_to_render = lines_total;
-    }
-    else if(lines_total == g_current_bar_lines)
-    {
-        return; /* do nothing */
-    }
-    else
-    {
-        lines_to_render = lines_total - g_current_bar_lines;
-    }
-
-    canvas_p = drv_ltdc_get_layer(LAYER_MISC);
-
-    for(i = g_current_bar_lines; i < (lines_to_render + g_current_bar_lines); i++)
-    {
-        for(j = 0; j < ROW_HEIGHT; j++)
-        {
-            canvas_p[j*MENU_WIDTH + i] = 0;
-        }
-    }
-
-    g_current_bar_lines += lines_to_render;
-}
-
 void serv_video_draw_load_proc()
 {
     uint8_t *canvas_p;
@@ -400,7 +365,7 @@ void serv_video_draw_load_proc()
 
     canvas_p = drv_ltdc_get_layer(LAYER_MISC);
 
-    rnd %= MENU_WIDTH*MENU_HEIGHT;
+    rnd %= MISC_WIDTH*MISC_HEIGHT;
 
     canvas_p[rnd] = rnd % 16;
 }

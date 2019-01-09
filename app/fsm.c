@@ -25,6 +25,7 @@
 #include "serv_keybd.h"
 #include "serv_storage.h"
 #include "serv_mem.h"
+#include "dev_tda19988.h"
 #include "drv_timer.h"
 #include "drv_led.h"
 
@@ -62,8 +63,13 @@
 #define LONG_PRESS_MS            500
 #define LONG_PRESS_INTERVAL_MS   30
 
+#define STATES_MAX              4
+
+typedef void (*transition_t)();
+
 typedef enum
 {
+    FSM_STATE_INIT,
 	FSM_STATE_EMU,
     FSM_STATE_LIST,
     FSM_STATE_TERM
@@ -81,7 +87,20 @@ typedef struct
     uint32_t files;
 } file_list_t;
 
-static state_t g_state = FSM_STATE_EMU;
+/* Transition prototypes */
+static void t_default();
+static void t_init2emu();
+static void t_emu2list();
+static void t_list2emu();
+static void t_emu2term();
+static void t_term2emu();
+static void t_emu2emu();
+static void t_list2list();
+static void t_term2term();
+
+static void keybd_event();
+
+static state_t g_state = FSM_STATE_INIT;
 static serv_keybd_state_t g_prev_key_state;
 static serv_keybd_state_t g_prev_shift_state;
 static serv_keybd_state_t g_prev_ctrl_state;
@@ -104,6 +123,66 @@ static file_list_t g_current_file_list;
 static uint32_t g_fps;
 static uint8_t g_led;
 static uint32_t g_term_row;
+
+static transition_t trans_pp[STATES_MAX][STATES_MAX] =
+{
+                    /* STATE_INIT */        /* STATE_EMU */         /* STATE_LIST */        /* STATE_TERM */
+/* STATE_INIT */    {t_default,             t_init2emu,             t_emu2list,             t_emu2term},
+/* STATE_EMU */     {t_default,             t_emu2emu,              t_emu2list,             t_emu2term},
+/* STATE_LIST */    {t_default,             t_list2emu,             t_list2list,            t_default},
+/* STATE_TERM */    {t_default,             t_term2emu,             t_default,              t_term2term},
+};
+
+static void t_default()
+{
+
+}
+
+static void t_init2emu()
+{
+    serv_video_set_layer_size(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_SCREEN_WIDTH, SERV_VIDEO_SCREEN_HEIGHT/16);
+}
+
+static void t_emu2list()
+{
+    serv_video_set_layer_size(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_SCREEN_WIDTH, SERV_VIDEO_SCREEN_HEIGHT);
+}
+
+static void t_list2emu()
+{
+    serv_video_set_layer_size(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_SCREEN_WIDTH, SERV_VIDEO_SCREEN_HEIGHT/16);
+}
+
+static void t_emu2term()
+{
+    serv_video_set_layer_size(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_SCREEN_WIDTH, SERV_VIDEO_SCREEN_HEIGHT);
+}
+
+static void t_term2emu()
+{
+    serv_video_set_layer_size(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_SCREEN_WIDTH, SERV_VIDEO_SCREEN_HEIGHT/16);
+}
+
+static void t_emu2emu()
+{
+
+}
+
+static void t_list2list()
+{
+    
+}
+
+static void t_term2term()
+{
+    
+}
+
+static void change_state(state_t state)
+{
+    trans_pp[g_state][state]();
+    g_state = state;
+}
 
 static void filter_changed(char key, uint8_t add)
 {
@@ -149,7 +228,7 @@ static void draw_list_member(uint32_t member)
 {
     char text_p[128];
 
-    sprintf(text_p, "%s [%dKb]",
+    sprintf(text_p, "%s [%ldKb]",
             g_current_file_list.files_p[member].fname_p,
             g_current_file_list.files_p[member].size/1024);
 
@@ -394,7 +473,7 @@ static void keybd_event()
                 g_key_active_ts = drv_timer_get_ms() + LONG_PRESS_INTERVAL_MS;
                 break;
             default:
-            break;
+                break;
         }
     }
 
@@ -438,44 +517,30 @@ void fsm_init()
 
     g_if_cc_emu.if_emu_cc_display.display_lock_frame_rate_fp(g_lock_freq_pal);
     g_if_cc_emu.if_emu_cc_display.display_limit_frame_rate_fp(g_limit_frame_rate);
-}
 
-void fsm_run()
-{
-	while(1)
-	{
-        switch(g_state)
-        {
-        case FSM_STATE_EMU:
-            if(g_disk_drive_on)
-            {
-                g_if_cc_emu.if_emu_cc_op.op_run_fp(25);
-                g_if_dd_emu.if_emu_dd_op.op_run_fp(25);
-            }
-            else
-            {
-                g_if_cc_emu.if_emu_cc_op.op_run_fp(MAX_EXEC_CYCLES);
-            }
-            serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_UP);
-            serv_video_fade(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_FADE_UP);
-        	break;
-        case FSM_STATE_LIST:
-        	serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_DOWN);
-        	break;
-        case FSM_STATE_TERM:
-            serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_DOWN);
-            break;
-        }
-        tda19988_irq_poll();
-        serv_keybd_poll();
-        keybd_event();
-	}
+    change_state(FSM_STATE_EMU);
 }
 
 void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
 {
     switch(e)
     {
+    case FSM_EVENT_RUN:
+        if(g_disk_drive_on)
+        {
+            g_if_cc_emu.if_emu_cc_op.op_run_fp(25);
+            g_if_dd_emu.if_emu_dd_op.op_run_fp(25);
+        }
+        else
+        {
+            g_if_cc_emu.if_emu_cc_op.op_run_fp(MAX_EXEC_CYCLES);
+        }
+        serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_UP);
+        serv_video_fade(SERV_VIDEO_LAYER_MISC, SERV_VIDEO_FADE_UP);
+        tda19988_irq_poll();
+        serv_keybd_poll();
+        keybd_event();
+        break;
     case FSM_EVENT_TIMER_100MS:
         if(g_if_cc_emu.if_emu_cc_time.time_tenth_second_fp != NULL)
         {
@@ -486,8 +551,9 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
         {
             char info_p[64];
             sprintf(info_p,
-                    "%d %s %s %s %s %s",
-                    g_fps, g_lock_freq_pal ? "1" : " " ,
+                    "%ld %s %s %s %s %s",
+                    g_fps,
+                    g_lock_freq_pal ? "1" : " " ,
                     g_limit_frame_rate ? "2" : " ",
                     g_tape_play ? "3": " ",
                     g_disk_drive_on ? "4" : " ",
@@ -522,12 +588,12 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             switch(edata1)
             {
             case KEY_ESC:
-                g_state = FSM_STATE_LIST;
+                change_state(FSM_STATE_LIST);
                 serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
                 drv_led_set(0, 1, 0);
                 break;
             case KEY_F1:
-                g_state = FSM_STATE_TERM;
+                change_state(FSM_STATE_TERM);
                 serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
                 drv_led_set(0, 1, 0);
                 break;
@@ -575,6 +641,8 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
                                                  serv_keybd_get_ctrl_state());
         }
         break;
+    default:
+        break;
     }
 }
 
@@ -582,18 +650,24 @@ void fsm_state_list(fsm_event_t e, uint32_t edata1, uint32_t edata2)
 {
     switch(e)
     {
+    case FSM_EVENT_RUN:
+        serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_DOWN);
+        tda19988_irq_poll();
+        serv_keybd_poll();
+        keybd_event();
+        break;
     case FSM_EVENT_KEY:
         switch(edata1)
         {
         case KEY_RETURN:
             if(serv_storage_load_file(&g_current_file_list.files_p[g_marker.pos_list]) == 0)
             {
-                g_state = FSM_STATE_EMU;
+                change_state(FSM_STATE_EMU);
                 serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
             }
             break;
         case KEY_ESC:
-            g_state = FSM_STATE_EMU;
+            change_state(FSM_STATE_EMU);
             serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
             break;
         case KEY_BS:
@@ -636,6 +710,8 @@ void fsm_state_list(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             draw_marker();
         }
         break;
+    default:
+        break;
     }
 }
 
@@ -643,11 +719,17 @@ void fsm_state_term(fsm_event_t e, uint32_t edata1, uint32_t edata2)
 {
     switch(e)
     {
+    case FSM_EVENT_RUN:
+        serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_DOWN);
+        tda19988_irq_poll();
+        serv_keybd_poll();
+        keybd_event();
+        break;
     case FSM_EVENT_KEY:
         switch(edata1)
         {
         case KEY_ESC:
-            g_state = FSM_STATE_EMU;
+            change_state(FSM_STATE_EMU);
             serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
             break;
         case KEY_ARROW_UP:
@@ -682,6 +764,8 @@ void fsm_state_term(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             serv_term_clear_rows();
             g_term_row = 0;
             break;
+        default:
+            break;
         }
         break;
     case FSM_EVENT_FADE_DONE:
@@ -712,6 +796,8 @@ void fsm_state_term(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             }
             draw_term(g_term_row);
         break;
+    default:
+        break;
     }
 }
 
@@ -727,6 +813,8 @@ void fsm_event(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             break;
         case FSM_STATE_TERM:
             fsm_state_term(e, edata1, edata2);
+            break;
+        default:
             break;
     }
 }

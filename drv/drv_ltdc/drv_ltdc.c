@@ -244,10 +244,15 @@ void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y)
     HAL_LTDC_SetWindowPosition(&g_ltdc_handle, x, y, layer);
 }
 
+void drv_ltdc_change_size(uint8_t layer, uint32_t width, uint32_t height)
+{
+    HAL_LTDC_SetWindowSize(&g_ltdc_handle, width, height, layer);
+}
+
 void drv_ltdc_flip_buffer(uint8_t layer, uint8_t *buffer_p)
 {
-    HAL_LTDC_SetAddress_NoReload(&g_ltdc_handle, (uint32_t)buffer_p, layer);
-    HAL_LTDC_Reload(&g_ltdc_handle, LTDC_RELOAD_VERTICAL_BLANKING);
+    HAL_LTDC_SetAddress/*_NoReload*/(&g_ltdc_handle, (uint32_t)buffer_p, layer);
+    //HAL_LTDC_Reload(&g_ltdc_handle, LTDC_RELOAD_VERTICAL_BLANKING);
 }
 
 void drv_ltdc_set_clut_table(uint32_t *clut_p)

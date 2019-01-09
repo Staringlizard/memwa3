@@ -25,6 +25,7 @@
 
 typedef enum
 {
+	FSM_EVENT_RUN,
 	FSM_EVENT_TIMER_100MS,
 	FSM_EVENT_TIMER_1000MS,
 	FSM_EVENT_STATS_FPS,
@@ -39,5 +40,4 @@ typedef enum
 } fsm_event_t;
 
 void fsm_init();
-void fsm_run();
 void fsm_event(fsm_event_t e, uint32_t edata1, uint32_t edata2);

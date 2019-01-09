@@ -52,13 +52,13 @@ void drv_sdram_init()
     /* SDRAM device configuration */
     g_sdram_handle.Instance = FMC_SDRAM_DEVICE;
 
-    g_fmc_sdram_timing.LoadToActiveDelay    = 1;
-    g_fmc_sdram_timing.ExitSelfRefreshDelay = 1;
-    g_fmc_sdram_timing.SelfRefreshTime      = 1;
+    g_fmc_sdram_timing.LoadToActiveDelay    = 2;
+    g_fmc_sdram_timing.ExitSelfRefreshDelay = 2;
+    g_fmc_sdram_timing.SelfRefreshTime      = 2;
     g_fmc_sdram_timing.RowCycleDelay        = 6;
-    g_fmc_sdram_timing.WriteRecoveryTime    = 1;
-    g_fmc_sdram_timing.RPDelay              = 2;
-    g_fmc_sdram_timing.RCDDelay             = 2;
+    g_fmc_sdram_timing.WriteRecoveryTime    = 2;
+    g_fmc_sdram_timing.RPDelay              = 3;
+    g_fmc_sdram_timing.RCDDelay             = 3;
 
     g_sdram_handle.Init.SDBank             = SDRAM_BANK;
     g_sdram_handle.Init.ColumnBitsNumber   = FMC_SDRAM_COLUMN_BITS_NUM_8;

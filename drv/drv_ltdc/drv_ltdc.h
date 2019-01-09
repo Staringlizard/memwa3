@@ -81,6 +81,7 @@ void drv_ltdc_set_alpha(uint8_t layer, uint8_t alpha);
 void drv_ltdc_set_trans_color(uint8_t layer, uint8_t color);
 void drv_ltdc_fill_layer(uint8_t layer, uint32_t color);
 void drv_ltdc_move_layer(uint8_t layer, uint32_t x, uint32_t y);
+void drv_ltdc_change_size(uint8_t layer, uint32_t width, uint32_t height);
 void drv_ltdc_flip_buffer(uint8_t layer, uint8_t *buffer_p);
 void drv_ltdc_set_clut_table(uint32_t *clut_p);
 void drv_ltdc_enable_clut(uint8_t layer);

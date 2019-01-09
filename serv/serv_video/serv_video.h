@@ -48,6 +48,7 @@ typedef enum
 typedef void (*fade_complete_cb_t)(uint8_t layer, serv_video_fade_t fade);
 
 void serv_video_init();
+void serv_video_set_layer_size(uint8_t layer, uint32_t width, uint32_t height);
 void serv_video_en();
 void serv_video_flip_buffer(uint8_t **buffer_pp);
 void serv_video_fade(uint8_t layer, serv_video_fade_t fade);

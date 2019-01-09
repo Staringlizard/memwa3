@@ -94,5 +94,9 @@ int main()
     serv_video_en();
 
     fsm_init();
-    fsm_run();
+
+    while(1)
+    {
+        fsm_event(FSM_EVENT_RUN, 0, 0);
+    }
 }

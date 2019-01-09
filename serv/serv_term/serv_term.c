@@ -80,9 +80,8 @@ static char *g_term_help_p = "[i2c_cec_r <reg>], read tda19988 register\r" \
                              "[mem_w <addr> <val>], write to memory address\r";
 
 static char g_cmd_input_str_p[TERM_CMD_MAX];
-static uint8_t g_cmd_input_cnt = 0;
+static uint32_t g_cmd_input_cnt = 0;
 static char g_delimiter_a[2] = " ";
-static uint32_t g_term_text_cnt;
 static char *g_term_text_rows_pp[TERM_ROW_MAX];
 static uint32_t g_term_text_row_cnt;
 static char *g_raw_text_p;
@@ -100,7 +99,7 @@ static uint32_t term_atoi(char *str_p)
     }
 }
 
-static void interpret(uint8_t *buf, uint32_t len)
+static void interpret(char *buf, uint32_t len)
 {
     char *argsv_pp[16];
     uint8_t argsc = 0;
