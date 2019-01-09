@@ -29,7 +29,7 @@
 
 I2C_HandleTypeDef g_i2c_handle;
 
-i2c_status_t drv_i2c_init()
+drv_i2c_status_t drv_i2c_init()
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
@@ -46,90 +46,104 @@ i2c_status_t drv_i2c_init()
     ret = HAL_I2C_Init(&g_i2c_handle);
     if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize I2C!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to initialize I2C (error %d)!", ret);
+        return DRV_I2C_STATUS_ERROR;
     }
 
     HAL_I2CEx_ConfigAnalogFilter(&g_i2c_handle, I2C_ANALOGFILTER_ENABLE);
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }
 
-i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val)
+drv_i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val)
 {
+    HAL_StatusTypeDef ret = HAL_OK;
     uint8_t array[2];
 
     /* Get endiness right */
     array[0] = val >> 8;
     array[1] = val & 0xFF;
 
-    if(HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, array, 2, 2000) != HAL_OK)
+    ret = HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, array, 2, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }
 
-i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val)
+drv_i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val)
 {
-    if(HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, &val, 1, 2000) != HAL_OK)
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    ret = HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, &val, 1, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }
 
-i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value_p)
+drv_i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value_p)
 {
-    if(HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, value_p, 1, 2000) != HAL_OK)
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    ret = HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, value_p, 1, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C register!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C register (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }
 
-i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, i2c_op_t op)
+drv_i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, drv_i2c_op_t op)
 {
+    HAL_StatusTypeDef ret = HAL_OK;
     uint8_t value = 0;
     uint8_t mod_value = 0;
 
-    if(HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, &value, 1, 2000) != HAL_OK)
+    ret = HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, &value, 1, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C register!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C register (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    if(op == I2C_OP_SET)
+    if(op == DRV_I2C_OP_SET)
     {
         mod_value = value | mask;
     }
-    else if(op == I2C_OP_CLEAR)
+    else if(op == DRV_I2C_OP_CLEAR)
     {
         mod_value = value & ~mask;
     }
 
-    if(HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, &mod_value, 1, 2000) != HAL_OK)
+    ret = HAL_I2C_Mem_Write(&g_i2c_handle, addr, reg, 1, &mod_value, 1, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write I2C register (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }
 
-i2c_status_t drv_i2c_rd_blk(uint8_t addr, uint8_t reg, uint8_t *buf_p, uint8_t len)
+drv_i2c_status_t drv_i2c_rd_blk(uint8_t addr, uint8_t reg, uint8_t *buf_p, uint8_t len)
 {
-    if(HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, buf_p, len, 2000) != HAL_OK)
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    ret = HAL_I2C_Mem_Read(&g_i2c_handle, addr, reg, 1, buf_p, len, 2000);
+    if(ret != HAL_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C blk!");
-        return I2C_STATUS_ERROR;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read I2C blk (hal: %d, i2c: %d)!", ret, g_i2c_handle.ErrorCode);
+        return DRV_I2C_STATUS_ERROR;
     }
 
-    return I2C_STATUS_OK;
+    return DRV_I2C_STATUS_OK;
 }

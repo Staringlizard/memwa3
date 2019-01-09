@@ -81,7 +81,7 @@ typedef struct {
 void tda19988_init();
 void tda19988_init_encoder(tda19988_vm_t *mode);
 void tda19988_configure();
+void tda19988_irq_poll();
 void tda19988_irq();
-void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p);
 
 #endif

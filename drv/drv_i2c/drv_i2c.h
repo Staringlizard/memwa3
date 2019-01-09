@@ -30,21 +30,21 @@
 
 typedef enum
 {
-	I2C_STATUS_OK,
-	I2C_STATUS_ERROR
-} i2c_status_t;
+	DRV_I2C_STATUS_OK,
+	DRV_I2C_STATUS_ERROR
+} drv_i2c_status_t;
 
 typedef enum
 {
-	I2C_OP_SET,
-	I2C_OP_CLEAR
-} i2c_op_t;
+	DRV_I2C_OP_SET,
+	DRV_I2C_OP_CLEAR
+} drv_i2c_op_t;
 
-i2c_status_t drv_i2c_init();
-i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val);
-i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val);
-i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value);
-i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, i2c_op_t op);
-i2c_status_t drv_i2c_rd_blk(uint8_t addr, uint8_t reg, uint8_t *buf_p, uint8_t len);
+drv_i2c_status_t drv_i2c_init();
+drv_i2c_status_t drv_i2c_wr_reg_8(uint8_t addr, uint8_t reg, uint8_t val);
+drv_i2c_status_t drv_i2c_wr_reg_16(uint8_t addr, uint8_t reg, uint16_t val);
+drv_i2c_status_t drv_i2c_rd_reg_8(uint8_t addr, uint8_t reg, uint8_t *value);
+drv_i2c_status_t drv_i2c_mod_reg_8(uint8_t addr, uint8_t reg, uint8_t mask, drv_i2c_op_t op);
+drv_i2c_status_t drv_i2c_rd_blk(uint8_t addr, uint8_t reg, uint8_t *buf_p, uint8_t len);
 
 #endif

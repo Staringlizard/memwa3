@@ -131,7 +131,7 @@ static void interpret(uint8_t *buf, uint32_t len)
         case CMD_I2C_CEC_READ:
         case CMD_I2C_HDMI_READ:
         {
-            i2c_status_t res = I2C_STATUS_OK;
+            drv_i2c_status_t res = DRV_I2C_STATUS_OK;
             uint8_t reg = 0xFF;
             uint8_t val = 0xFF;
             if(argsv_pp[1] == NULL)
@@ -149,7 +149,7 @@ static void interpret(uint8_t *buf, uint32_t len)
                 res = drv_i2c_rd_reg_8(TDA19988_ADDR_HDMI, reg, &val);
             }
 
-            if(res == I2C_STATUS_OK)
+            if(res == DRV_I2C_STATUS_OK)
             {
                 printf("reading 0x%02X from register 0x%02X", val, reg);
             }
@@ -162,7 +162,7 @@ static void interpret(uint8_t *buf, uint32_t len)
         case CMD_I2C_HDMI_WRITE:
         case CMD_I2C_CEC_WRITE:
         {
-            i2c_status_t res = I2C_STATUS_OK;
+            drv_i2c_status_t res = DRV_I2C_STATUS_OK;
             uint8_t reg = 0xFF;
             uint8_t val = 0xFF;
             if(argsv_pp[1] == NULL || argsv_pp[2] == NULL)
@@ -181,7 +181,7 @@ static void interpret(uint8_t *buf, uint32_t len)
                 res = drv_i2c_wr_reg_8(TDA19988_ADDR_HDMI, reg, val);
             }
 
-            if(res == I2C_STATUS_OK)
+            if(res == DRV_I2C_STATUS_OK)
             {
                 printf("writing 0x%02X to register 0x%02X", val, reg);
             }

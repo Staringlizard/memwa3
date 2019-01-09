@@ -466,6 +466,7 @@ void fsm_run()
             serv_video_fade(SERV_VIDEO_LAYER_EMU, SERV_VIDEO_FADE_DOWN);
             break;
         }
+        tda19988_irq_poll();
         serv_keybd_poll();
         keybd_event();
 	}

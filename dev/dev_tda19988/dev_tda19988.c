@@ -23,6 +23,7 @@
 #include "dev_tda19988.h"
 #include "hal_conf.h"
 #include "drv_i2c.h"
+#include "edid.h"
 
 #define PAGE(reg)                       (((reg) >> 8) & 0xff)
 #define REG(reg)                        ((reg) & 0xff)
@@ -192,7 +193,6 @@
 
 
 /* EDID reading */ 
-#define EDID_LENGTH                     0x80
 #define MAX_READ_ATTEMPTS               100
 
 /* EDID fields */
@@ -213,6 +213,8 @@
 
 static uint16_t version;
 static uint8_t sc_current_page;
+static uint8_t g_irq_pending;
+static struct edid g_edid;
 
 tda19988_vm_t videomode_list[] =
 {
@@ -320,7 +322,7 @@ static void handle_paging(uint8_t i2c_addr, uint16_t mem_addr)
     if(i2c_addr == TDA19988_ADDR_HDMI &&
        sc_current_page != page)
     {
-        if(drv_i2c_wr_reg_8(i2c_addr, TDA_CURPAGE_ADDR, page) != I2C_STATUS_OK)
+        if(drv_i2c_wr_reg_8(i2c_addr, TDA_CURPAGE_ADDR, page) != DRV_I2C_STATUS_OK)
         {
             serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write page!");
             return;
@@ -336,21 +338,21 @@ static void clear_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t mask)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    drv_i2c_mod_reg_8(i2c_addr, reg, mask, I2C_OP_CLEAR);
+    drv_i2c_mod_reg_8(i2c_addr, reg, mask, DRV_I2C_OP_CLEAR);
 }
 
 static void set_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t mask)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    drv_i2c_mod_reg_8(i2c_addr, reg, mask, I2C_OP_SET);
+    drv_i2c_mod_reg_8(i2c_addr, reg, mask, DRV_I2C_OP_SET);
 }
 
 static void write_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t val)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    if(drv_i2c_wr_reg_8(i2c_addr, reg, val) != I2C_STATUS_OK)
+    if(drv_i2c_wr_reg_8(i2c_addr, reg, val) != DRV_I2C_STATUS_OK)
     {
         serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write reg!");
         return;
@@ -361,33 +363,35 @@ static void write_reg_16(uint8_t i2c_addr, uint16_t mem_addr, uint16_t val)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    if(drv_i2c_wr_reg_16(i2c_addr, reg, val) != I2C_STATUS_OK)
+    if(drv_i2c_wr_reg_16(i2c_addr, reg, val) != DRV_I2C_STATUS_OK)
     {
         serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to write reg!");
         return;
     }
 }
 
-/*static */void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p)
+static void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    if(drv_i2c_rd_reg_8(i2c_addr, reg, val_p) != I2C_STATUS_OK)
+    if(drv_i2c_rd_reg_8(i2c_addr, reg, val_p) != DRV_I2C_STATUS_OK)
     {
         serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read reg!");
         return;
     }
 }
 
-static void read_block(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *buf_p, uint8_t len)
+static uint8_t read_block(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *buf_p, uint8_t len)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
-    if(drv_i2c_rd_blk(i2c_addr, reg, buf_p, len) != I2C_STATUS_OK)
+    if(drv_i2c_rd_blk(i2c_addr, reg, buf_p, len) != DRV_I2C_STATUS_OK)
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read reg!");
-        return;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read block!");
+        return 1;
     }
+    
+    return 0;
 }
 
 static void trigger_edid()
@@ -397,13 +401,33 @@ static void trigger_edid()
      */
     write_reg_8(TDA19988_ADDR_HDMI, TDA_EDID_CTRL, 1);
     write_reg_8(TDA19988_ADDR_HDMI, TDA_EDID_CTRL, 0);
+}
 
-/*
-    if (tda19988_block_read(TDA19988_ADDR_HDMI, TDA_EDID_DATA0, buf, EDID_LENGTH) != 0) {
-        err = -1;
-        goto done;
-    }*/
+static char *get_monitor_name()
+{
+    uint8_t *tmp_p = (uint8_t *)&g_edid;
+    uint8_t offsets[4] = {0x36, 0x48, 0x5a, 0x6c};
+    uint8_t pattern[4] = {0x00, 0x00, 0x00, 0xfc};
+    uint32_t i;
+    uint32_t j;
+    uint8_t match;
 
+    for(i = 0; i < 4; i++)
+    {
+        for(j = 0; j < 4; j++)
+        {
+            if(tmp_p[offsets[i] + j] == pattern[j])
+            {
+                match++;
+                if(match == 4)
+                {
+                    /* Match found, next 12 bytes contains name */
+                    return &tmp_p[offsets[i] + j + 2];
+                }
+            }
+        }
+        match = 0;
+    }
 }
 
 void tda19988_init()
@@ -626,10 +650,10 @@ void tda19988_configure()
     switch (version)
     {
         case TDA19988:
-            serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found TDA19988\n");
+            serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found TDA19988");
             break;
         default:
-            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Unknown device: %04x\n", version);
+            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Unknown device: %04x", version);
             goto done;
     }
 
@@ -687,92 +711,66 @@ done:
     ;  
 }
 
+void tda19988_irq_poll()
+{
+    if(g_irq_pending)
+    {
+        uint8_t block = 0;
+        uint8_t sta = 0;
+        uint8_t cec = 0;
+        uint8_t lvl = 0;
+        uint8_t flag0 = 0;
+        uint8_t flag1 = 0;
+        uint8_t flag2 = 0;
 
+        read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_INT_STATUS, &sta);
+        if (sta & CEC_INT_STATUS_HDMI)
+        {
+            read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_RXS_HPD_INT, &cec);
+            read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_RXS_HPD_LEV, &lvl);
+            read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_0, &flag0);
+            read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_1, &flag1);
+            read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_2, &flag2);
+
+            if(cec & CEC_RXS_HPD_INT_HPD)
+            {
+                if(lvl & CEC_RXS_HPD_LEV_HPD)
+                {
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "HDMI connection found -> fetching EDID...");
+                    trigger_edid();
+                }
+            }
+
+            if(flag2 & INT_FLAGS_2_EDID_BLK_RD)
+            {
+                uint8_t res = 0;
+                /* Block 0 */
+                write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_ADDR, 0xa0);
+
+                /* Set Offset */
+                write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_OFFS, (block % 2) ? 128 : 0);
+                write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_SEGM_ADDR, 0x60);
+                write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_SEGM, block / 2);
+
+                res = read_block(TDA19988_ADDR_HDMI, TDA_EDID_DATA0, (uint8_t *)&g_edid, EDID_LENGTH);
+
+                if(res == 0)
+                {
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Got EDID!");
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Connected to %.12s", get_monitor_name());
+                }
+                else
+                {
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to get EDID!");
+                }
+            }
+        }
+
+        g_irq_pending = 0;
+    }
+}
 
 void tda19988_irq()
 {
-    uint8_t block = 0;
-    uint8_t sta = 0;
-    uint8_t cec = 0;
-    uint8_t lvl = 0;
-    uint8_t flag0 = 0;
-    uint8_t flag1 = 0;
-    uint8_t flag2 = 0;
-    uint8_t buf_a[128] = {0};
-
-    read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_INT_STATUS, &sta);
-    if (sta & CEC_INT_STATUS_HDMI)
-    {
-        read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_RXS_HPD_INT, &cec);
-        read_reg_8(TDA19988_ADDR_CEC, TDA_CEC_RXS_HPD_LEV, &lvl);
-        read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_0, &flag0);
-        read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_1, &flag1);
-        read_reg_8(TDA19988_ADDR_HDMI, TDA_INT_FLAGS_2, &flag2);
-
-        if(cec & CEC_RXS_HPD_INT_HPD)
-        {
-            if(lvl & CEC_RXS_HPD_LEV_HPD)
-            {
-                /* Get ready to read edid */
-            }
-        }
-
-        if(flag2 & INT_FLAGS_2_EDID_BLK_RD)
-        {
-            
-            /* Block 0 */
-            write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_ADDR, 0xa0);
-
-            /* Set Offset */
-            write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_OFFS, (block % 2) ? 128 : 0);
-            write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_SEGM_ADDR, 0x60);
-            write_reg_8(TDA19988_ADDR_HDMI, TDA_DDC_SEGM, block / 2);
-
-            read_block(TDA19988_ADDR_HDMI, TDA_EDID_DATA0, buf_a, EDID_LENGTH);
-        }
-    }
+    g_irq_pending = 1;
 }
-
-#if 0
-/*
- * only 2 interrupts may occur: screen plug/unplug and EDID read
- */
-static irqreturn_t tda998x_irq_thread(int irq, void *data)
-{
-    struct tda998x_priv *priv = data;
-    u8 sta, cec, lvl, flag0, flag1, flag2;
-    bool handled = false;
-
-    sta = cec_read(priv, REG_CEC_INTSTATUS);
-    if (sta & CEC_INTSTATUS_HDMI) {
-        cec = cec_read(priv, REG_CEC_RXSHPDINT);
-        lvl = cec_read(priv, REG_CEC_RXSHPDLEV);
-        flag0 = reg_read(priv, REG_INT_FLAGS_0);
-        flag1 = reg_read(priv, REG_INT_FLAGS_1);
-        flag2 = reg_read(priv, REG_INT_FLAGS_2);
-        DRM_DEBUG_DRIVER(
-            "tda irq sta %02x cec %02x lvl %02x f0 %02x f1 %02x f2 %02x\n",
-            sta, cec, lvl, flag0, flag1, flag2);
-
-        if (cec & CEC_RXSHPDINT_HPD) {
-            if (lvl & CEC_RXSHPDLEV_HPD) {
-                tda998x_edid_delay_start(priv);
-            } else {
-                schedule_work(&priv->detect_work);
-                cec_notifier_set_phys_addr(priv->cec_notify,
-                           CEC_PHYS_ADDR_INVALID);
-            }
-
-            handled = true;
-        }
-
-        if ((flag2 & INT_FLAGS_2_EDID_BLK_RD) && priv->wq_edid_wait) {
-            priv->wq_edid_wait = 0;
-            wake_up(&priv->wq_edid);
-            handled = true;
-        }
-    }
-
-    return IRQ_RETVAL(handled);
-}
-#endif

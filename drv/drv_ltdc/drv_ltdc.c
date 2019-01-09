@@ -288,6 +288,12 @@ drv_ltdc_buffer_t drv_ltdc_get_buffer(uint8_t *buffer_p)
 
 void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 {
+    /* Ignore errors in the very beginning */
+    if(HAL_GetTick() < 2000)
+    {
+        return;
+    }
+
     switch((uint32_t)hltdc->ErrorCode)
     {
         case HAL_LTDC_ERROR_NONE:
@@ -311,6 +317,6 @@ void HAL_LTDC_ErrorCallback(LTDC_HandleTypeDef *hltdc)
 
 void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
 {
-    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "HAL LTDC line callback!");
+    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "HAL LTDC line callback!");
     //HAL_LTDC_ProgramLineEvent(hltdc, 200);
 }

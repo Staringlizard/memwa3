@@ -31,7 +31,6 @@
 #include "usbh_hid.h"
 #include "usbd_cdc_if.h"
 #include "if.h"
-#include "sm.h"
 
 #define MAX_KEYS            6
 #define DEFAULT_KEY_MAX     71
