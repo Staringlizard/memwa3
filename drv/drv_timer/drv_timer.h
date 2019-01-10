@@ -25,7 +25,6 @@
 #define _DRV_TIMER_H
 
 #include "stm32h7xx_hal.h"
-#include "serv_term.h"
 
 void drv_timer_init();
 void drv_timer_tick();

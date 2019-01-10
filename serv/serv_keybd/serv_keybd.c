@@ -33,7 +33,7 @@
 #include "if.h"
 
 #define MAX_KEYS            6
-#define DEFAULT_KEY_MAX     71
+#define DEFAULT_KEY_MAX     72
 
 USBH_HandleTypeDef g_usbh_host;
 static uint8_t g_current_id;
@@ -41,7 +41,7 @@ static uint8_t g_keys_pressed;
 static serv_keybd_state_t g_keybd_state;
 static serv_keybd_state_t g_shift_state;
 static serv_keybd_state_t g_ctrl_state;
-static uint8_t g_keys_active_a[MAX_KEYS + 1];
+static uint8_t g_keys_active_p[MAX_KEYS + 1];
 
 static if_keybd_map_t g_default_keybd_map_p[DEFAULT_KEY_MAX] =
 {
@@ -55,6 +55,7 @@ static if_keybd_map_t g_default_keybd_map_p[DEFAULT_KEY_MAX] =
   {0x1E,0,7}, {0x35,1,7}  /* CTRL */, {0x1F,3,7}, {0x2C,4,7}, {0x2B,5,7}, {0x14,6,7}, {0x29,7,7},
   {0x52,0,8}, {0x51,1,8}, {0x4F,2,8}, {0x50,3,8}, {0x4C,4,8}, /* Joystick A CIA PORT B; up, down, left, right, fire */
   {0x60,8,0}, {0x5A,8,1}, {0x5E,8,2}, {0x5C,8,3}, {0x62,8,4}, /* Joystick B CIA PORT A; up, down, left, right, fire */
+  {0x00,0,0}, /* Do not forget the terminator as scancode 0x00 */
 };
 
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
@@ -68,14 +69,14 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         uint8_t shift_pressed = USBH_HID_ShiftPressed(k_pinfo);
         uint8_t ctrl_pressed = USBH_HID_CtrlPressed(k_pinfo);
 
-        memset(g_keys_active_a, 0x00, MAX_KEYS + 1);
+        memset(g_keys_active_p, 0x00, MAX_KEYS + 1);
         g_keys_pressed = 0;
 
         for(i = 0; i < MAX_KEYS; i++)
         {
             if(k_pinfo->keys[i] != 0)
             {
-                g_keys_active_a[i] = k_pinfo->keys[i];
+                g_keys_active_p[i] = k_pinfo->keys[i];
                 g_keys_pressed++;
             }
             else
@@ -84,7 +85,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
             }
         }
 
-        if(g_keys_active_a[0] != 0)
+        if(g_keys_active_p[0] != 0)
         {
             g_keybd_state = SERV_KEYBD_STATE_PRESSED;
         }
@@ -116,7 +117,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         g_keybd_state = SERV_KEYBD_STATE_RELEASED;
         g_shift_state = SERV_KEYBD_STATE_RELEASED;
         g_ctrl_state = SERV_KEYBD_STATE_RELEASED;
-        memset(g_keys_active_a, 0x00, MAX_KEYS + 1);
+        memset(g_keys_active_p, 0x00, MAX_KEYS + 1);
     }
 }
 
@@ -164,23 +165,23 @@ serv_keybd_state_t serv_keybd_get_ctrl_state()
 
 uint8_t serv_keybd_get_active_key()
 {
-    return g_keys_active_a[0];
+    return g_keys_active_p[0];
 }
 
 uint8_t *serv_keybd_get_active_keys()
 {
-    return g_keys_active_a;
+    return g_keys_active_p;
 }
 
 uint8_t serv_keybd_get_active_keys_hash()
 {
-    return g_keys_active_a[0] ^
-           g_keys_active_a[1] ^
-           g_keys_active_a[2] ^
-           g_keys_active_a[3] ^
-           g_keys_active_a[4] ^
-           g_keys_active_a[5] ^
-           g_keys_active_a[6];
+    return g_keys_active_p[0] ^
+           g_keys_active_p[1] ^
+           g_keys_active_p[2] ^
+           g_keys_active_p[3] ^
+           g_keys_active_p[4] ^
+           g_keys_active_p[5] ^
+           g_keys_active_p[6];
 }
 
 uint8_t serv_keybd_get_active_number_of_keys()
@@ -190,7 +191,7 @@ uint8_t serv_keybd_get_active_number_of_keys()
 
 uint8_t serv_keybd_get_active_ascii_key()
 {
-    return USBH_HID_GetASCIICode(g_keys_active_a[0]);
+    return USBH_HID_GetASCIICode(g_keys_active_p[0]);
 }
 
 if_keybd_map_t *serv_keybd_get_default_map()

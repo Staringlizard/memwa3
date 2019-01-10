@@ -25,7 +25,6 @@
 #define _DRV_LTDC_H
 
 #include "stm32h7xx_hal.h"
-#include "serv_term.h"
 
 typedef enum
 {

@@ -26,6 +26,7 @@
  */
 
 #include "drv_crc.h"
+#include "serv_term.h"
 
 static CRC_HandleTypeDef g_crc_handle_type;
 

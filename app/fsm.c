@@ -124,6 +124,7 @@ static file_list_t g_current_file_list;
 static uint32_t g_fps;
 static uint8_t g_led;
 static uint32_t g_term_row;
+static uint8_t g_info;
 
 static transition_t trans_pp[STATES_MAX][STATES_MAX] =
 {
@@ -496,12 +497,13 @@ static void keybd_event()
     if(g_key_active != 0)
     {
         g_key_active_ts = drv_timer_get_ms() + LONG_PRESS_MS;
-        fsm_event(FSM_EVENT_KEY, g_key_active, 0);
     }
     else
     {
         g_key_active_ts = 0xFFFFFFFF;
     }
+
+    fsm_event(FSM_EVENT_KEY, g_key_active, 0);
 }
 
 static void fade_complete_cb(uint8_t layer, serv_video_fade_t fade)
@@ -520,39 +522,12 @@ static void draw_info_field()
     char *cc_ver_p;
     char *dd_ver_p;
 
-    sprintf(tmp_p, "%ld ", g_fps);
+    sprintf(tmp_p, "emu fps: %ld ", g_fps);
     serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
                          14,
                          0,
                          tmp_p,
                          0,
-                         0);
-
-    sprintf(tmp_p, "lock freq: %s ", g_lock_freq_pal ? "yes":"no");
-
-    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
-                         14,
-                         0,
-                         tmp_p,
-                         40 + 80*0,
-                         0);
-
-    sprintf(tmp_p, "limit emu: %s ", g_limit_frame_rate ? "yes":"no");
-
-    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
-                         14,
-                         0,
-                         tmp_p,
-                         40 + 80*1,
-                         0);
-
-    sprintf(tmp_p, "tape play: %s ", g_tape_play ? "yes":"no");
-
-    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
-                         14,
-                         0,
-                         tmp_p,
-                         40 + 80*2,
                          0);
 
     sprintf(tmp_p, "disk drive on: %s %c ", g_disk_drive_on ? "yes":"no", g_led ? 'O':' ');
@@ -561,7 +536,34 @@ static void draw_info_field()
                          14,
                          0,
                          tmp_p,
-                         40 + 80*3,
+                         100*1,
+                         0);
+
+    sprintf(tmp_p, "lock freq: %s ", g_lock_freq_pal ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         100*2,
+                         0);
+
+    sprintf(tmp_p, "limit emu: %s ", g_limit_frame_rate ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         100*3,
+                         0);
+
+    sprintf(tmp_p, "tape play: %s ", g_tape_play ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         100*4,
                          0);
 
     sprintf(tmp_p, "host version: %s", FW_VERSION);
@@ -627,7 +629,10 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
         break;
     case FSM_EVENT_TIMER_1000MS:
         {
-            draw_info_field();
+            if(g_info)
+            {
+                draw_info_field();
+            }
             g_led = 0;
         }
         break;
@@ -656,12 +661,15 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
                 drv_led_set(0, 1, 0);
                 break;
             case KEY_F1:
-                change_state(FSM_STATE_TERM);
+                g_info = !g_info;
                 serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
-                drv_led_set(0, 1, 0);
+                if(g_info)
+                {
+                    draw_info_field();
+                }
                 break;
             case KEY_F2:
-                g_disk_drive_on = !g_disk_drive_on;             
+                g_disk_drive_on = !g_disk_drive_on;
                 break;
             case KEY_F3:
                 g_lock_freq_pal = !g_lock_freq_pal;
@@ -670,8 +678,6 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
                 g_if_cc_emu.if_emu_cc_display.display_limit_frame_rate_fp(g_limit_frame_rate);
                 break;
             case KEY_F4:
-                break;
-            case KEY_F5:
                 g_tape_play = !g_tape_play;
                 if(g_tape_play)
                 {
@@ -682,11 +688,16 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
                     g_if_cc_emu.if_emu_cc_tape_drive.tape_drive_stop_fp();
                 }
                 break;
+            case KEY_F5:
+                break;
             case KEY_F6:
                 break;
             case KEY_F9:
                 break;
             case KEY_F10:
+                change_state(FSM_STATE_TERM);
+                serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
+                drv_led_set(0, 1, 0);
                 break;
             case KEY_F11:
                 reset_emu();

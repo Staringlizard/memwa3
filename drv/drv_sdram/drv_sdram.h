@@ -26,7 +26,6 @@
 #define _DRV_SDRAM_H
 
 #include "stm32h7xx_hal.h"
-#include "serv_term.h"
 
 #define SDRAM_BANK              FMC_SDRAM_BANK1
 #define SDRAM_ADDR              0x60000000

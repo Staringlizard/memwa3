@@ -2,8 +2,8 @@ ARCH_FLAGS=-mcpu=cortex-m7
 CC = arm-none-eabi-gcc
 AR = arm-none-eabi-gcc-ar
 
-BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -Ofast -c -DSTM32H743xx
-BL_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -Ofast -Wl,-Map=./out_bl/bl.map,--gc-section,-T ./link.ld
+BL_CFLAGS = $(ARCH_FLAGS) $(BL_INCLUDES) -mthumb -Wall -static -ffunction-sections -g -c -DSTM32H743xx
+BL_LFLAGS = $(ARCH_FLAGS) --specs=nosys.specs -mthumb -static -g -Wl,-Map=./out_bl/bl.map,--gc-section,-T ./link.ld
 
 # NOTE: If building bootloader then change to ORIGIN = 0x08000000 in link.ld
 # and also change the vector tables in system_stm32h7xx.c to 0x00000 (VECT_TAB_OFFSET).
@@ -40,6 +40,7 @@ BL_INCLUDES := \
 	-I./mware/usb_device/core \
 	-I./mware/usb_device/cdc \
 	-I./mware/usb_device/cust \
+	-I./serv/serv_term \
 	-I./app \
 	-I./rom \
 	-I./hostif
@@ -48,7 +49,7 @@ BL_INCLUDES := \
 BL_LINK_FILES := \
 	./out_bl/startup_stm32h743xx.o \
 	./out_bl/bl.o \
-	./out_bl/sdcard.o \
+	./out_bl/drv_sdcard.o \
 	./out_bl/diskio.o \
 	./out_bl/system_stm32h7xx.o \
 	./out_bl/stm32h7xx_hal_flash.o \
@@ -63,6 +64,7 @@ BL_LINK_FILES := \
 	./out_bl/stm32h7xx_hal_rcc_ex.o \
 	./out_bl/stm32h7xx_ll_sdmmc.o \
 	./out_bl/stm32h7xx_ll_delayblock.o \
+	./out_bl/drv_led.o \
 	./out_bl/ff.o \
 	./out_bl/ccsbcs.o
 
@@ -196,9 +198,9 @@ all: $(TARGET)
 $(BL):
 	@mkdir ./out_bl 2>/dev/null; true
 	@echo Compiling bootloader...
-	$(CC) $(BL_CFLAGS) -o out_bl/sdcard.o ./drv/drv_sdcard/drv_sdcard.c
+	$(CC) $(BL_CFLAGS) -o out_bl/drv_sdcard.o ./drv/drv_sdcard/drv_sdcard.c
 	$(CC) $(BL_CFLAGS) -o out_bl/diskio.o ./drv/drv_sdcard/diskio.c
-	$(CC) $(BL_CFLAGS) -o out_bl/ltdc.o ./drv/drv_ltdc/drv_ltdc.c
+	$(CC) $(BL_CFLAGS) -o out_bl/drv_ltdc.o ./drv/drv_ltdc/drv_ltdc.c
 	$(CC) $(BL_CFLAGS) -o out_bl/system_stm32h7xx.o ./cmsis_boot/system_stm32h7xx.c
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal_sd.o ./hal/stm32h7xx_hal_sd.c
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_hal.o ./hal/stm32h7xx_hal.c
@@ -214,6 +216,7 @@ $(BL):
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_ll_sdmmc.o ./hal/stm32h7xx_ll_sdmmc.c
 	$(CC) $(BL_CFLAGS) -o out_bl/stm32h7xx_ll_delayblock.o ./hal/stm32h7xx_ll_delayblock.c
 	$(CC) $(BL_CFLAGS) -o out_bl/irq.o ./irq/irq.c
+	$(CC) $(BL_CFLAGS) -o out_bl/drv_led.o ./drv/drv_led/drv_led.c
 	$(CC) $(BL_CFLAGS) -o out_bl/ff.o ./mware/fatfs/ff.c
 	$(CC) $(BL_CFLAGS) -o out_bl/ccsbcs.o ./mware/fatfs/ccsbcs.c
 	$(CC) $(BL_CFLAGS) -o out_bl/bl.o ./bl/bl.c

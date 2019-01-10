@@ -26,6 +26,7 @@
  */
 
 #include "drv_rng.h"
+#include "serv_term.h"
 
 static RNG_HandleTypeDef g_rng_handle;
 

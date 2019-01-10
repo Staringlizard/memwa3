@@ -23,23 +23,35 @@
 
 #include "bl.h"
 #include "drv_ltdc.h"
+#include "drv_led.h"
 #include "drv_sdcard.h"
 #include "ff.h"
 #include "stm32h7xx_hal_flash.h"
 #include "stm32h7xx_hal_rcc.h"
 
-#define BUFFER_SIZE        256
+#define BUFFER_SIZE        32
 
-#define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base address of Sector 0, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08008000) /* Base address of Sector 1, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_2     ((uint32_t)0x08010000) /* Base address of Sector 2, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_3     ((uint32_t)0x08018000) /* Base address of Sector 3, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_4     ((uint32_t)0x08020000) /* Base address of Sector 4, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_5     ((uint32_t)0x08040000) /* Base address of Sector 5, 256 Kbytes */
-#define ADDR_FLASH_SECTOR_6     ((uint32_t)0x08070000) /* Base address of Sector 6, 256 Kbytes */
-#define ADDR_FLASH_SECTOR_7     ((uint32_t)0x080A0000) /* Base address of Sector 7, 256 Kbytes */
+/* Base address of the Flash sectors Bank 1 */
+#define ADDR_FLASH_SECTOR_0_BANK1     ((uint32_t)0x08000000) /* Base @ of Sector 0, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_1_BANK1     ((uint32_t)0x08020000) /* Base @ of Sector 1, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_2_BANK1     ((uint32_t)0x08040000) /* Base @ of Sector 2, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_3_BANK1     ((uint32_t)0x08060000) /* Base @ of Sector 3, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_4_BANK1     ((uint32_t)0x08080000) /* Base @ of Sector 4, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_5_BANK1     ((uint32_t)0x080A0000) /* Base @ of Sector 5, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_6_BANK1     ((uint32_t)0x080C0000) /* Base @ of Sector 6, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_7_BANK1     ((uint32_t)0x080E0000) /* Base @ of Sector 7, 128 Kbytes */
 
-#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_4
+/* Base address of the Flash sectors Bank 2 */
+#define ADDR_FLASH_SECTOR_0_BANK2     ((uint32_t)0x08100000) /* Base @ of Sector 0, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_1_BANK2     ((uint32_t)0x08120000) /* Base @ of Sector 1, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_2_BANK2     ((uint32_t)0x08140000) /* Base @ of Sector 2, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_3_BANK2     ((uint32_t)0x08160000) /* Base @ of Sector 3, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_4_BANK2     ((uint32_t)0x08180000) /* Base @ of Sector 4, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_5_BANK2     ((uint32_t)0x081A0000) /* Base @ of Sector 5, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_6_BANK2     ((uint32_t)0x081C0000) /* Base @ of Sector 6, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_7_BANK2     ((uint32_t)0x081E0000) /* Base @ of Sector 7, 128 Kbytes */
+
+#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_1_BANK1
 #define FW_PATH_AND_NAME        "0:/target.bin"
 #define FW_PATH                 "0:/"
 
@@ -49,31 +61,31 @@ static uint32_t get_sector(uint32_t addr)
 {
   uint32_t sector = 0;
 
-  if((addr < ADDR_FLASH_SECTOR_1) && (addr >= ADDR_FLASH_SECTOR_0))
+  if((addr < ADDR_FLASH_SECTOR_1_BANK1) && (addr >= ADDR_FLASH_SECTOR_0_BANK1))
   {
     sector = FLASH_SECTOR_0;
   }
-  else if((addr < ADDR_FLASH_SECTOR_2) && (addr >= ADDR_FLASH_SECTOR_1))
+  else if((addr < ADDR_FLASH_SECTOR_2_BANK1) && (addr >= ADDR_FLASH_SECTOR_1_BANK1))
   {
     sector = FLASH_SECTOR_1;
   }
-  else if((addr < ADDR_FLASH_SECTOR_3) && (addr >= ADDR_FLASH_SECTOR_2))
+  else if((addr < ADDR_FLASH_SECTOR_3_BANK1) && (addr >= ADDR_FLASH_SECTOR_2_BANK1))
   {
     sector = FLASH_SECTOR_2;
   }
-  else if((addr < ADDR_FLASH_SECTOR_4) && (addr >= ADDR_FLASH_SECTOR_3))
+  else if((addr < ADDR_FLASH_SECTOR_4_BANK1) && (addr >= ADDR_FLASH_SECTOR_3_BANK1))
   {
     sector = FLASH_SECTOR_3;
   }
-  else if((addr < ADDR_FLASH_SECTOR_5) && (addr >= ADDR_FLASH_SECTOR_4))
+  else if((addr < ADDR_FLASH_SECTOR_5_BANK1) && (addr >= ADDR_FLASH_SECTOR_4_BANK1))
   {
     sector = FLASH_SECTOR_4;
   }
-  else if((addr < ADDR_FLASH_SECTOR_6) && (addr >= ADDR_FLASH_SECTOR_5))
+  else if((addr < ADDR_FLASH_SECTOR_6_BANK1) && (addr >= ADDR_FLASH_SECTOR_5_BANK1))
   {
     sector = FLASH_SECTOR_5;
   }
-  else if((addr < ADDR_FLASH_SECTOR_7) && (addr >= ADDR_FLASH_SECTOR_6))
+  else if((addr < ADDR_FLASH_SECTOR_7_BANK1) && (addr >= ADDR_FLASH_SECTOR_6_BANK1))
   {
     sector = FLASH_SECTOR_6;
   }
@@ -92,11 +104,12 @@ static void erase_flash()
     uint32_t error_sector = 0;
     HAL_StatusTypeDef res_flash;
 
-    first_sector = get_sector(ADDR_FLASH_SECTOR_4);
-    nbr_sectors = get_sector(ADDR_FLASH_SECTOR_7) - first_sector + 1;
+    first_sector = get_sector(FLASH_USER_START_ADDR);
+    nbr_sectors = get_sector(ADDR_FLASH_SECTOR_7_BANK1) - first_sector + 1;
 
     EraseInitStruct.TypeErase     = FLASH_TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange  = FLASH_VOLTAGE_RANGE_3;
+    EraseInitStruct.Banks         = FLASH_BANK_1;
     EraseInitStruct.Sector        = first_sector;
     EraseInitStruct.NbSectors     = nbr_sectors;
 
@@ -113,7 +126,7 @@ static void erase_flash()
 
 static void jump_to_application()
 {
-    uint32_t jump_addr = *(uint32_t *)(ADDR_FLASH_SECTOR_4 + 4);
+    uint32_t jump_addr = *(uint32_t *)(FLASH_USER_START_ADDR + 4);
     jump_function_t jump_function = (jump_function_t)jump_addr;
 
     HAL_RCC_DeInit();
@@ -121,7 +134,7 @@ static void jump_to_application()
     SysTick->LOAD = 0;
     SysTick->VAL = 0;
 
-    __set_MSP(*(uint32_t*)ADDR_FLASH_SECTOR_4);
+    __set_MSP(*(uint32_t*)FLASH_USER_START_ADDR);
 
     jump_function();
 
@@ -133,22 +146,48 @@ static void config_clks()
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    /**Supply configuration update enable 
-    */
+    /*
+     * Supply configuration update enable
+     */
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
-    /**Configure the main internal regulator output voltage 
-    */
+
+    /*
+     * The voltage scaling allows optimizing the power consumption when the device is
+     * clocked below the maximum system frequency, to update the voltage scaling value
+     * regarding system frequency refer to product datasheet.
+     */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
-    {
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {;}
 
-    }
-    /**Macro to configure the PLL clock source 
-    */
     __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+
+    /* 
+     * Initializes the CPU, AHB and APB busses clocks 
+     *
+     * Below givs:
+     * SysClk:      400Mhz
+     * CPU1:        400Mhz
+     * CPU2:        200Mhz
+     * AXI:         200Mhz
+     * HCLK3:       200Mhz
+     * APB3:        100Mhz
+     * AHB 1,2:     200Mhz
+     * APB1:        100Mhz
+     * APB1 Timer:  200Mhz
+     * APB2:        100Mhz
+     * APB2 Timer:  200Mhz
+     * AHB4:        200Mhz
+     * APB4:        100Mhz
+     *
+     * RNG:         48Mhz
+     * I2C4:        100Mhz
+     * FMC:         200Mhz
+     * LTDC:        40Mhz
+     * SDMMC:       200Mhz
+     * USB:         48Mhz
+     */
+
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
@@ -157,7 +196,7 @@ static void config_clks()
     RCC_OscInitStruct.PLL.PLLM = 1;
     RCC_OscInitStruct.PLL.PLLN = 100;
     RCC_OscInitStruct.PLL.PLLP = 2;
-    RCC_OscInitStruct.PLL.PLLQ = 128;
+    RCC_OscInitStruct.PLL.PLLQ = 4;
     RCC_OscInitStruct.PLL.PLLR = 2;
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -166,8 +205,7 @@ static void config_clks()
     {
         while(1) {;}
     }
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
@@ -183,10 +221,12 @@ static void config_clks()
     {
         while(1) {;}
     }
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_SDMMC
+
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_RNG
+                              |RCC_PERIPHCLK_SDMMC|RCC_PERIPHCLK_I2C4
                               |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FMC;
     PeriphClkInitStruct.PLL3.PLL3M = 2;
-    PeriphClkInitStruct.PLL3.PLL3N = 28;
+    PeriphClkInitStruct.PLL3.PLL3N = 20;
     PeriphClkInitStruct.PLL3.PLL3P = 2;
     PeriphClkInitStruct.PLL3.PLL3Q = 2;
     PeriphClkInitStruct.PLL3.PLL3R = 2;
@@ -195,11 +235,22 @@ static void config_clks()
     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
     PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_D1HCLK;
     PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
+    PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
         while(1) {;}
     }
+
+    /* Activate CSI clock mondatory for I/O Compensation Cell */
+    __HAL_RCC_CSI_ENABLE();
+
+    /* Enable SYSCFG clock mondatory for I/O Compensation Cell */
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+
+    /* Enables the I/O Compensation Cell */
+    HAL_EnableCompensationCell();
 
     /* SysTick_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(SysTick_IRQn, 1, 1);
@@ -218,6 +269,7 @@ static void flash_file(FIL *fd_p, char *file_p)
 
     HAL_FLASH_Unlock();
 
+    drv_led_set(0, 1, 0);
     erase_flash();
 
     do
@@ -231,7 +283,7 @@ static void flash_file(FIL *fd_p, char *file_p)
 
         res_flash = HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD,
                                       FLASH_USER_START_ADDR + read_cnt,
-                                      buffer_p);
+                                      (uint64_t)(uint32_t)buffer_p);
         if(res_flash != HAL_OK)
         {
             while(1){;}
@@ -249,6 +301,7 @@ static void flash_file(FIL *fd_p, char *file_p)
 
     read_cnt = 0;
 
+    drv_led_set(0, 0, 1);
     do
     {
         uint32_t i;
@@ -368,7 +421,7 @@ int main()
     if(drv_sdcard_inserted())
     {
         /* Check for fw and flash it if found */
-        //fw_update();
+        fw_update();
     }
 
     jump_to_application();

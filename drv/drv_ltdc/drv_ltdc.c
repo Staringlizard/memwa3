@@ -29,6 +29,7 @@
 #include "drv_led.h"
 #include "stm32h7xx_hal_ltdc.h"
 #include "stm32h7xx_hal_dma2d.h"
+#include "serv_term.h"
 #include <string.h>
 
 #define VGA_WIDTH  ((uint16_t)640)

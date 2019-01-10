@@ -381,7 +381,7 @@ void serv_storage_read_config()
 
         if(res != FR_OK || bytes_read == 0)
         {
-            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading file (palette)!");
+            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading file %s!", g_conf_path_pp[0]);
         }
 
         colors_pp[colors_cnt] = strtok((char *)palette_string_p, delimiter_p);
@@ -426,7 +426,7 @@ void serv_storage_read_config()
 
         if(res != FR_OK || bytes_read == 0)
         {
-            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading file (palette)!");
+            serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading file %s!", g_conf_path_pp[1]);
         }
 
         //serv_keybd_populate_map(key_string_p, g_keybd_map_a);

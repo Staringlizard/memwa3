@@ -31,6 +31,7 @@
 #include "hal_conf.h"
 #include "drv_rng.h"
 #include "drv_led.h"
+#include "serv_term.h"
 
 typedef enum
 {

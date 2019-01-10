@@ -27,6 +27,7 @@
 
 #include "drv_sdcard.h"
 #include "hal_conf.h"
+#include "serv_term.h"
 
 SD_HandleTypeDef g_sd_handle;
 

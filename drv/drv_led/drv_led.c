@@ -27,6 +27,7 @@
 
 #include "drv_led.h"
 #include "hal_conf.h"
+#include "serv_term.h"
 
 static uint8_t g_red;
 static uint8_t g_green;
