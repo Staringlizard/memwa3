@@ -25,7 +25,6 @@
 #include "romcc.h"
 #include "romdd.h"
 #include "serv_mem.h"
-#include "serv_video.h"
 #include "drv_sdcard.h"
 #include <stdlib.h>
 
@@ -64,6 +63,7 @@ static uint32_t g_file_list_cnt;
 static uint32_t g_sel_file;
 static uint32_t g_sel_page;
 static FIL *g_fd_p;
+static scanned_files_t g_scanned_files_fp;
 
 static char *get_filename_ext(char *filename)
 {
@@ -435,6 +435,11 @@ void serv_storage_read_config()
     }
 }
 
+void serv_storage_scan_files_cb(scanned_files_t cb)
+{
+    g_scanned_files_fp = cb;
+}
+
 void serv_storage_unscan_files()
 {
     uint32_t i;
@@ -528,7 +533,10 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
                     break;
                 }
 
-                serv_video_draw_load_proc();
+                if(g_scanned_files_fp != NULL && (g_file_list_cnt % 20) == 0)
+                {
+                    g_scanned_files_fp(g_file_list_cnt);
+                }
             }
         }
         f_closedir(&dir);

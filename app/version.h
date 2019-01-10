@@ -2,6 +2,6 @@
 #define _VERSION_H
 
 /* This must ALWAYS be uppdated for every release */
-#define FW_VERSION             "V1.0.7"
+#define FW_VERSION             "V"IF_VERSION".0.0"
 
 #endif

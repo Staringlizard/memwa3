@@ -32,6 +32,8 @@
 
 #define MAX_FNAME_LEN   48
 
+typedef void (*scanned_files_t)(uint32_t tot_files);
+
 typedef enum
 {
 	SERV_STORAGE_FILE_TYPE_T64,
@@ -50,6 +52,8 @@ typedef struct
 void serv_storage_init();
 void serv_storage_mount();
 void serv_storage_read_config();
+void serv_storage_scan_files_cb(scanned_files_t cb);
+void serv_storage_unscan_files();
 uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *files_p);
 void serv_storage_files_filter(serv_storage_file_t *entries_p, uint32_t *files_p, serv_storage_file_t **result_pp, char *filter_p);
 uint8_t serv_storage_load_file(serv_storage_file_t *file_p);

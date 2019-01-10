@@ -48,7 +48,7 @@
 #define COLOR_BG                0
 #define COLOR_TRANS             0
 
-#define FONT_HEIGHT             SERV_VIDEO_FONT_HIGHT
+#define FONT_HEIGHT             SERV_VIDEO_FONT_HEIGHT
 #define FONT_WIDTH              SERV_VIDEO_FONT_WIDTH
 #define ROW_HEIGHT              SERV_VIDEO_ROW_HEIGHT
 
@@ -358,14 +358,9 @@ void serv_video_clear_layer(uint8_t layer)
     drv_ltdc_fill_layer(layer, COLOR_BG);
 }
 
-void serv_video_draw_load_proc()
+void serv_video_draw_load_prog(uint32_t prog)
 {
-    uint8_t *canvas_p;
-    uint32_t rnd = drv_rng_get();
-
-    canvas_p = drv_ltdc_get_layer(LAYER_MISC);
-
-    rnd %= MISC_WIDTH*MISC_HEIGHT;
-
-    canvas_p[rnd] = rnd % 16;
+    char text_p[32];
+    sprintf(text_p, "Files scanned: %ld", prog);
+    serv_video_draw_text(LAYER_MISC, 14, 0, text_p, SCREEN_WIDTH/2 - strlen(text_p)*FONT_WIDTH/2, SCREEN_HEIGHT/4);
 }

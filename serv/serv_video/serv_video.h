@@ -30,9 +30,9 @@
 
 #define SERV_VIDEO_SCREEN_WIDTH            800
 #define SERV_VIDEO_SCREEN_HEIGHT           600
-#define SERV_VIDEO_FONT_HIGHT              8
+#define SERV_VIDEO_FONT_HEIGHT             8
 #define SERV_VIDEO_FONT_WIDTH              5
-#define SERV_VIDEO_ROW_HEIGHT              (SERV_VIDEO_FONT_HIGHT + 2)
+#define SERV_VIDEO_ROW_HEIGHT              (SERV_VIDEO_FONT_HEIGHT + 2)
 #define SERV_VIDEO_LAYER_EMU               0
 #define SERV_VIDEO_LAYER_MISC              1
 #define SERV_VIDEO_MISC_WIDTH              SERV_VIDEO_SCREEN_WIDTH
@@ -55,8 +55,6 @@ void serv_video_fade(uint8_t layer, serv_video_fade_t fade);
 void serv_video_reg_fade_cb(fade_complete_cb_t cb);
 void serv_video_draw_text(uint8_t layer, uint8_t fg, uint8_t bg, char *txt_p, uint32_t x, uint32_t y);
 void serv_video_clear_layer(uint8_t layer);
-void serv_video_reset_load_bar();
-void serv_video_draw_load_bar(uint32_t percent);
-void serv_video_draw_load_proc();
+void serv_video_draw_load_prog(uint32_t prog);
 
 #endif

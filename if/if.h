@@ -24,6 +24,8 @@
 #ifndef _IF_H
 #define _IF_H
 
+#define IF_VERSION                          "1"
+
 /*********************** EMULATOR CC INTERFACE */
 
 #define IF_MEMORY_CC_RAM_ACTUAL_SIZE        0x10000
@@ -138,6 +140,7 @@ typedef void (*if_emu_cc_time_tenth_second_t)();
 typedef void (*if_emu_cc_ports_write_serial_t)(uint8_t data);
 typedef void (*if_emu_cc_display_limit_frame_rate_t)(uint8_t active);
 typedef void (*if_emu_cc_display_lock_frame_rate_t)(uint8_t active);
+typedef void (*if_emu_cc_ver_get_t)(char **ver_pp);
 
 typedef struct
 {
@@ -179,8 +182,13 @@ typedef struct
 
 typedef struct
 {
-    if_emu_cc_ports_write_serial_t if_emu_cc_ports_write_serial_fp;
+    if_emu_cc_ports_write_serial_t ports_write_serial_fp;
 } if_emu_cc_ports_t;
+
+typedef struct
+{
+    if_emu_cc_ver_get_t ver_get_fp;
+} if_emu_cc_ver_t;
 
 /*
  * Emulator cc main interface. These
@@ -196,6 +204,7 @@ typedef struct
     if_emu_cc_tape_drive_t if_emu_cc_tape_drive;
     if_emu_cc_time_t if_emu_cc_time;
     if_emu_cc_ports_t if_emu_cc_ports;
+    if_emu_cc_ver_t if_emu_cc_ver;
 } if_emu_cc_t;
 
 
@@ -216,6 +225,7 @@ typedef void (*if_emu_dd_op_run_t)(int32_t cycles);
 typedef void (*if_emu_dd_op_reset_t)();
 typedef void (*if_emu_dd_disk_drive_load_t)(uint32_t *fd_p);
 typedef void (*if_emu_dd_ports_write_serial_t)(uint8_t data);
+typedef void (*if_emu_dd_ver_get_t)(char **ver_pp);
 
 typedef struct
 {
@@ -236,8 +246,13 @@ typedef struct
 
 typedef struct
 {
-    if_emu_dd_ports_write_serial_t if_emu_dd_ports_write_serial_fp;
+    if_emu_dd_ports_write_serial_t ports_write_serial_fp;
 } if_emu_dd_ports_t;
+
+typedef struct
+{
+    if_emu_dd_ver_get_t ver_get_fp;
+} if_emu_dd_ver_t;
 
 /*
  * Emulator dd main interface. These
@@ -250,6 +265,7 @@ typedef struct
     if_emu_dd_op_t if_emu_dd_op;
     if_emu_dd_disk_drive_t if_emu_dd_disk_drive;
     if_emu_dd_ports_t if_emu_dd_ports;
+    if_emu_dd_ver_t if_emu_dd_ver;
 } if_emu_dd_t;
 
 

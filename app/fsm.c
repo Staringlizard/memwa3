@@ -28,6 +28,7 @@
 #include "dev_tda19988.h"
 #include "drv_timer.h"
 #include "drv_led.h"
+#include "version.h"
 
 #define MAX_EXEC_CYCLES		400
 #define MAX_FILTER          28
@@ -314,7 +315,7 @@ static void draw_marker()
     {
         char text_p[128];
 
-        sprintf(text_p, "%s [%dKb]",
+        sprintf(text_p, "%s [%ldKb]",
                 g_current_file_list.files_p[g_marker.pos_list].fname_p,
                 g_current_file_list.files_p[g_marker.pos_list].size/1024);
 
@@ -508,12 +509,89 @@ static void fade_complete_cb(uint8_t layer, serv_video_fade_t fade)
     fsm_event(FSM_EVENT_FADE_DONE, layer, fade);
 }
 
+static void scan_files_cb(uint32_t files)
+{
+    fsm_event(FSM_EVENT_SCAN_FILES, files, 0);
+}
+
+static void draw_info_field()
+{
+    char tmp_p[64];
+    char *cc_ver_p;
+    char *dd_ver_p;
+
+    sprintf(tmp_p, "%ld ", g_fps);
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         0,
+                         0);
+
+    sprintf(tmp_p, "lock freq: %s ", g_lock_freq_pal ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         40 + 80*0,
+                         0);
+
+    sprintf(tmp_p, "limit emu: %s ", g_limit_frame_rate ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         40 + 80*1,
+                         0);
+
+    sprintf(tmp_p, "tape play: %s ", g_tape_play ? "yes":"no");
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         40 + 80*2,
+                         0);
+
+    sprintf(tmp_p, "disk drive on: %s %c ", g_disk_drive_on ? "yes":"no", g_led ? 'O':' ');
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         40 + 80*3,
+                         0);
+
+    sprintf(tmp_p, "host version: %s", FW_VERSION);
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         SERV_VIDEO_SCREEN_WIDTH - strlen(tmp_p)*SERV_VIDEO_FONT_WIDTH,
+                         0);
+
+    g_if_cc_emu.if_emu_cc_ver.ver_get_fp(&cc_ver_p);
+    g_if_dd_emu.if_emu_dd_ver.ver_get_fp(&dd_ver_p);
+    sprintf(tmp_p, "emu version cc/dd: %s/%s", cc_ver_p, dd_ver_p);
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         14,
+                         0,
+                         tmp_p,
+                         SERV_VIDEO_SCREEN_WIDTH - strlen(tmp_p)*SERV_VIDEO_FONT_WIDTH,
+                         SERV_VIDEO_FONT_HEIGHT);
+}
+
 void fsm_init()
 {
     g_if_cc_emu.if_emu_cc_op.op_init_fp();
     g_if_dd_emu.if_emu_dd_op.op_init_fp();
 
     serv_video_reg_fade_cb(fade_complete_cb);
+    serv_storage_scan_files_cb(scan_files_cb);
 
     g_if_cc_emu.if_emu_cc_display.display_lock_frame_rate_fp(g_lock_freq_pal);
     g_if_cc_emu.if_emu_cc_display.display_limit_frame_rate_fp(g_limit_frame_rate);
@@ -549,22 +627,7 @@ void fsm_state_emu(fsm_event_t e, uint32_t edata1, uint32_t edata2)
         break;
     case FSM_EVENT_TIMER_1000MS:
         {
-            char info_p[64];
-            sprintf(info_p,
-                    "%ld %s %s %s %s %s",
-                    g_fps,
-                    g_lock_freq_pal ? "1" : " " ,
-                    g_limit_frame_rate ? "2" : " ",
-                    g_tape_play ? "3": " ",
-                    g_disk_drive_on ? "4" : " ",
-                    g_led ? "5" : " ");
-
-            serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
-                                 4,
-                                 0,
-                                 info_p,
-                                 0,
-                                 0);
+            draw_info_field();
             g_led = 0;
         }
         break;
@@ -710,6 +773,8 @@ void fsm_state_list(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             draw_marker();
         }
         break;
+    case FSM_EVENT_SCAN_FILES:
+        serv_video_draw_load_prog(edata1);
     default:
         break;
     }

@@ -287,10 +287,10 @@ void if_host_ports_write_serial(if_emu_dev_t if_emu_dev, uint8_t data)
     switch(if_emu_dev)
     {
         case IF_EMU_DEV_CC: /* Computer writes to serial port */
-            g_if_dd_emu.if_emu_dd_ports.if_emu_dd_ports_write_serial_fp(data);
+            g_if_dd_emu.if_emu_dd_ports.ports_write_serial_fp(data);
             break;
         case IF_EMU_DEV_DD: /* Disk drive writes to serial port */
-            g_if_cc_emu.if_emu_cc_ports.if_emu_cc_ports_write_serial_fp(data);
+            g_if_cc_emu.if_emu_cc_ports.ports_write_serial_fp(data);
             break;
     }
 
