@@ -54,8 +54,8 @@
  * This can get all the remaining memory to support as
  * many filenames as possible.
  */
-#define CC_FILES_SIZE    	   (0x180000)
-#define CC_FILES_FILTERED_SIZE (0x80000)
+#define CC_FILES_SIZE    	   (0x1C0000)
+#define CC_FILES_FILTERED_SIZE (0x40000)
 #define CC_FILES_ADDR    	   (DD_UTIL1_BASE_ADDR + IF_MEMORY_DD_UTIL1_SIZE)
 #define CC_FILES_FILTERED_ADDR (CC_FILES_ADDR + CC_FILES_SIZE)
 

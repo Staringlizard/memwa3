@@ -46,7 +46,7 @@
   GPIOH->BSRRL = data << 8;
 
 #define SID_SET_ADDR(addr) \
-  GPIOI->BSRRH = 0x0F80; \
+  GPIOI->BSRRH = (0x1F << 7); \
   GPIOI->BSRRL = (addr & 0x1F) << 7;
 
 #define SID_GET_DATA() \

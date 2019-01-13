@@ -129,17 +129,17 @@ typedef void (*if_emu_cc_ue_joyst_t)(if_joyst_port_t if_joyst_port, if_joyst_act
 typedef void (*if_emu_cc_ue_keybd_t)(uint8_t *keybd_keys_p, uint8_t max_keys, if_key_state_t if_key_shift, if_key_state_t if_key_ctrl);
 typedef void (*if_emu_cc_ue_keybd_map_set_t)(if_keybd_map_t *if_keybd_map_p);
 typedef void (*if_emu_cc_display_layer_set_t)(uint8_t *layer_p);
+typedef void (*if_emu_cc_display_limit_frame_rate_t)(uint8_t active);
+typedef void (*if_emu_cc_display_lock_frame_rate_t)(uint8_t active);
 typedef void (*if_emu_cc_mem_set_t)(uint8_t *mem_p, if_mem_cc_type_t if_mem_type);
 typedef void (*if_emu_cc_op_init_t)();
-typedef void (*if_emu_cc_op_run_t)(int32_t cycles);
+typedef void (*if_emu_cc_op_run_t)(uint32_t cycles);
 typedef void (*if_emu_cc_op_reset_t)();
 typedef void (*if_emu_cc_tape_drive_load_t)(uint32_t *fd_p);
 typedef void (*if_emu_cc_tape_drive_play_t)();
 typedef void (*if_emu_cc_tape_drive_stop_t)();
 typedef void (*if_emu_cc_time_tenth_second_t)();
 typedef void (*if_emu_cc_ports_write_serial_t)(uint8_t data);
-typedef void (*if_emu_cc_display_limit_frame_rate_t)(uint8_t active);
-typedef void (*if_emu_cc_display_lock_frame_rate_t)(uint8_t active);
 typedef void (*if_emu_cc_ver_get_t)(char **ver_pp);
 
 typedef struct
@@ -221,7 +221,7 @@ typedef enum
 
 typedef void (*if_emu_dd_mem_set_t)(uint8_t *mem_p, if_mem_dd_type_t if_mem_type);
 typedef void (*if_emu_dd_op_init_t)();
-typedef void (*if_emu_dd_op_run_t)(int32_t cycles);
+typedef void (*if_emu_dd_op_run_t)(uint32_t cycles);
 typedef void (*if_emu_dd_op_reset_t)();
 typedef void (*if_emu_dd_disk_drive_load_t)(uint32_t *fd_p);
 typedef void (*if_emu_dd_ports_write_serial_t)(uint8_t data);

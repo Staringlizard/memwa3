@@ -25,6 +25,7 @@
 #include "romcc.h"
 #include "romdd.h"
 #include "serv_mem.h"
+#include "serv_keybd.h"
 #include "drv_sdcard.h"
 #include <stdlib.h>
 
@@ -54,9 +55,8 @@ static char *g_prog_path_pp[1] =
 
 static FATFS g_fatfs;
 static char g_sd_path_p[] = {"0:/"};
-static uint32_t g_clut_a[MAX_CLUT_SIZE];
-//static if_keybd_map_t g_keybd_map_a[DEFAULT_KEY_MAX + 1];
-
+static uint32_t g_clut_p[MAX_CLUT_SIZE];
+static if_keybd_map_t g_keybd_map_p[SERV_KEYBD_MAP_SIZE + 1];
 static serv_storage_file_t *g_file_list_p = (serv_storage_file_t *)CC_FILES_ADDR;
 static serv_storage_file_t *g_file_list_filterd_p = (serv_storage_file_t *)CC_FILES_FILTERED_ADDR;
 static uint32_t g_file_list_cnt;
@@ -274,7 +274,7 @@ void serv_storage_read_config()
         read_cnt = 0;
         while(read_cnt != IF_MEMORY_CC_BROM_ACTUAL_SIZE)
         {
-            f_read(&fd, (uint8_t *)(CC_BROM_BASE_ADDR + CC_BROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
+            res = f_read(&fd, (uint8_t *)(CC_BROM_BASE_ADDR + CC_BROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
                 serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (brom)!");
@@ -298,7 +298,7 @@ void serv_storage_read_config()
         read_cnt = 0;
         while(read_cnt != IF_MEMORY_CC_CROM_ACTUAL_SIZE)
         {
-            f_read(&fd, (uint8_t *)(CC_CROM_BASE_ADDR + CC_CROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
+            res = f_read(&fd, (uint8_t *)(CC_CROM_BASE_ADDR + CC_CROM_LOAD_ADDR + read_cnt), BUFFER_SIZE, (UINT *)&bytes_read);
             if(res != FR_OK || bytes_read == 0)
             {
                 serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading rom file (crom)!");
@@ -363,7 +363,6 @@ void serv_storage_read_config()
     }
 
      /* Try and load palette conf from sd card */
-
     res = f_open(&fd, g_conf_path_pp[0], FA_READ);
 
     if(res == FR_OK)
@@ -377,7 +376,7 @@ void serv_storage_read_config()
         memset(colors_pp, 0x00, 28 * sizeof(char *));
         memset(palette_string_p, 0x00, 256);
 
-        f_read(&fd, (uint8_t *)palette_string_p, 256, (UINT *)&bytes_read);
+        res = f_read(&fd, (uint8_t *)palette_string_p, 256, (UINT *)&bytes_read);
 
         if(res != FR_OK || bytes_read == 0)
         {
@@ -396,7 +395,7 @@ void serv_storage_read_config()
                 color = strtoul(colors_pp[colors_cnt], NULL, 16);
 
                 /* Add to collection */
-                g_clut_a[colors_cnt] = color;
+                g_clut_p[colors_cnt] = color;
             }
             else
             {
@@ -408,11 +407,11 @@ void serv_storage_read_config()
 
         f_close(&fd);
 
-        //drv_ltdc_set_clut_table(g_clut_a);
+        drv_ltdc_set_clut_table(g_clut_p);
     }
     else
     {
-        ; /* No file found, the default clut table will be used in disp.c */
+        ; /* No file found, the default clut table will be used */
     }
 
      /* Try and load key conf from sd card */
@@ -422,16 +421,22 @@ void serv_storage_read_config()
     {
         uint8_t key_string_p[1024]; /* 16 chars max on one row */
 
-        f_read(&fd, (uint8_t *)key_string_p, 1024, (UINT *)&bytes_read);
+        res = f_read(&fd, (uint8_t *)key_string_p, 1024, (UINT *)&bytes_read);
 
         if(res != FR_OK || bytes_read == 0)
         {
             serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Error reading file %s!", g_conf_path_pp[1]);
         }
 
-        //serv_keybd_populate_map(key_string_p, g_keybd_map_a);
+        serv_keybd_populate_map(key_string_p, g_keybd_map_p);
+
+        g_if_cc_emu.if_emu_cc_ue.ue_keybd_map_set_fp(g_keybd_map_p);
 
         f_close(&fd);
+    }
+    else
+    {
+        ; /* No file found, the default keybd table will be used */
     }
 }
 
@@ -479,6 +484,14 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
     }
 
     res = f_opendir(&dir, g_prog_path_pp[0]);
+
+    if(res == FR_DISK_ERR && drv_sdcard_inserted())
+    {
+        /* Perhaps the sd card was removed and inserted? Try one more time */
+        drv_sdcard_init();
+        res = f_opendir(&dir, g_prog_path_pp[0]);
+    }
+
     if(res == FR_OK)
     {
         (void)f_readdir(&dir, &fno); /* remove "." */
@@ -545,14 +558,15 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
     if(res == FR_OK)
     {
         return_val = 0;
+        *files_p = g_file_list_cnt;
+        *entries_pp = g_file_list_p;
+
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found %d files when scanning %s", g_file_list_cnt, g_prog_path_pp[0]);
     }
     else
     {
         return_val = 1;
     }
-
-    *files_p = g_file_list_cnt;
-    *entries_pp = g_file_list_p;
 
     return return_val;
 }
@@ -590,13 +604,23 @@ uint8_t serv_storage_load_file(serv_storage_file_t *file_p)
     /* Create new fd and try and open file */
     fd_p = (FIL *)calloc(1, sizeof(FIL));
     res = f_open(fd_p, path_p, FA_READ);
+
+    if(res == FR_DISK_ERR && drv_sdcard_inserted())
+    {
+        /* Perhaps the sd card was removed and inserted? Try one more time */
+        drv_sdcard_init();
+        res = f_open(fd_p, path_p, FA_READ);
+    }
+
     if(res != FR_OK)
     {
         free(fd_p);
         fd_p = NULL;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Unable to open %s (errno %d)!", path_p, res);
         return 1;
     }
 
+    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Sucessfully opened %s!", path_p);
     process_file(fd_p, file_p->type);
 
     return 0;

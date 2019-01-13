@@ -28,6 +28,9 @@
 #include "serv_term.h"
 #include "if.h"
 
+#define SERV_KEYBD_SIMUL_KEYS 	6
+#define SERV_KEYBD_MAP_SIZE     72
+
 typedef enum
 {
     SERV_KEYBD_STATE_RELEASED,

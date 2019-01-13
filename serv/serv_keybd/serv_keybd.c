@@ -32,18 +32,15 @@
 #include "usbd_cdc_if.h"
 #include "if.h"
 
-#define MAX_KEYS            6
-#define DEFAULT_KEY_MAX     72
-
 USBH_HandleTypeDef g_usbh_host;
 static uint8_t g_current_id;
 static uint8_t g_keys_pressed;
 static serv_keybd_state_t g_keybd_state;
 static serv_keybd_state_t g_shift_state;
 static serv_keybd_state_t g_ctrl_state;
-static uint8_t g_keys_active_p[MAX_KEYS + 1];
+static uint8_t g_keys_active_p[SERV_KEYBD_SIMUL_KEYS + 1];
 
-static if_keybd_map_t g_default_keybd_map_p[DEFAULT_KEY_MAX] =
+static if_keybd_map_t g_default_keybd_map_p[SERV_KEYBD_MAP_SIZE] =
 {
   {0x2A,0,0}, {0x28,1,0}, {0x43,2,0}, {0x40,3,0}, {0x3A,4,0}, {0x3C,5,0}, {0x3E,6,0}, {0x42,7,0},
   {0x20,0,1}, {0x1A,1,1}, {0x04,2,1}, {0x21,3,1}, {0x1D,4,1}, {0x16,5,1}, {0x08,6,1}  /*LSHIFT*/,
@@ -69,10 +66,10 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         uint8_t shift_pressed = USBH_HID_ShiftPressed(k_pinfo);
         uint8_t ctrl_pressed = USBH_HID_CtrlPressed(k_pinfo);
 
-        memset(g_keys_active_p, 0x00, MAX_KEYS + 1);
+        memset(g_keys_active_p, 0x00, SERV_KEYBD_SIMUL_KEYS + 1);
         g_keys_pressed = 0;
 
-        for(i = 0; i < MAX_KEYS; i++)
+        for(i = 0; i < SERV_KEYBD_SIMUL_KEYS; i++)
         {
             if(k_pinfo->keys[i] != 0)
             {
@@ -117,7 +114,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         g_keybd_state = SERV_KEYBD_STATE_RELEASED;
         g_shift_state = SERV_KEYBD_STATE_RELEASED;
         g_ctrl_state = SERV_KEYBD_STATE_RELEASED;
-        memset(g_keys_active_p, 0x00, MAX_KEYS + 1);
+        memset(g_keys_active_p, 0x00, SERV_KEYBD_SIMUL_KEYS + 1);
     }
 }
 
@@ -207,9 +204,9 @@ void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p)
     char scan_code_p[3];
     char matrix_x_p[2];
     char matrix_y_p[2];
-    char *keys_pp[DEFAULT_KEY_MAX + 1];
+    char *keys_pp[SERV_KEYBD_MAP_SIZE + 1];
 
-    memset(keys_pp, 0x00, (DEFAULT_KEY_MAX + 1) * sizeof(char *));
+    memset(keys_pp, 0x00, (SERV_KEYBD_MAP_SIZE + 1) * sizeof(char *));
 
     keys_pp[keys_cnt] = strtok((char *)conf_text, delimiter_p);
 
@@ -251,5 +248,10 @@ void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p)
         keybd_map_p[keys_cnt].matrix_y = atoi(matrix_y_p);
 
         keys_cnt++;
+
+        if(keys_cnt >= SERV_KEYBD_MAP_SIZE)
+        {
+            break;
+        }
     }
 }
