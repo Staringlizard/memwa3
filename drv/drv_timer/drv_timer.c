@@ -26,9 +26,9 @@
  */
 
 #include "drv_timer.h"
+#include "serv_term.h"
 #include "if.h"
 #include "fsm.h"
-#include "serv_term.h"
 
 extern if_emu_cc_t g_if_cc_emu;
 

@@ -27,18 +27,22 @@
  */
 
 #include "serv_keybd.h"
-#include "usbh_core.h"
+#include "drv_timer.h"
 #include "usbh_hid.h"
 #include "usbd_cdc_if.h"
 #include "if.h"
 
+#define LONG_PRESS_MS            500
+#define LONG_PRESS_ACTION_MS     30
+
 USBH_HandleTypeDef g_usbh_host;
 static uint8_t g_current_id;
-static uint8_t g_keys_pressed;
-static serv_keybd_state_t g_keybd_state;
 static serv_keybd_state_t g_shift_state;
 static serv_keybd_state_t g_ctrl_state;
 static uint8_t g_keys_active_p[SERV_KEYBD_SIMUL_KEYS + 1];
+static key_event_t g_key_event_fp;
+static uint32_t g_key_event_ts;
+static uint8_t g_long_press_active;
 
 static if_keybd_map_t g_default_keybd_map_p[SERV_KEYBD_MAP_SIZE] =
 {
@@ -66,29 +70,40 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         uint8_t shift_pressed = USBH_HID_ShiftPressed(k_pinfo);
         uint8_t ctrl_pressed = USBH_HID_CtrlPressed(k_pinfo);
 
-        memset(g_keys_active_p, 0x00, SERV_KEYBD_SIMUL_KEYS + 1);
-        g_keys_pressed = 0;
-
         for(i = 0; i < SERV_KEYBD_SIMUL_KEYS; i++)
         {
-            if(k_pinfo->keys[i] != 0)
+            if(k_pinfo->keys[i] != g_keys_active_p[i])
             {
-                g_keys_active_p[i] = k_pinfo->keys[i];
-                g_keys_pressed++;
-            }
-            else
-            {
-                break;
-            }
-        }
+                /*
+                 * If more than two keys pressed {a, b}, and if a is released, then
+                 * pinfo will be shifted to become {b, 0} rather than {0, b}. This
+                 * is why || is needed below.
+                 */
+                if(k_pinfo->keys[i] == 0 || k_pinfo->keys[i] == g_keys_active_p[i+1])
+                {
+                    char active_key = g_keys_active_p[i];
+                    memcpy(g_keys_active_p, k_pinfo->keys, SERV_KEYBD_SIMUL_KEYS);
 
-        if(g_keys_active_p[0] != 0)
-        {
-            g_keybd_state = SERV_KEYBD_STATE_PRESSED;
-        }
-        else
-        {
-            g_keybd_state = SERV_KEYBD_STATE_RELEASED;
+                    /* Key previously pressed has been released */
+                    if(g_key_event_fp)
+                    {
+                        g_key_event_fp(active_key, SERV_KEYBD_STATE_RELEASED);
+                    }
+                    break;
+                }
+                else
+                {
+                    char active_key = k_pinfo->keys[i];
+                    memcpy(g_keys_active_p, k_pinfo->keys, SERV_KEYBD_SIMUL_KEYS);
+
+                    /* Key has been pressed */
+                    if(g_key_event_fp)
+                    {
+                        g_key_event_fp(active_key, SERV_KEYBD_STATE_PRESSED);
+                    }
+                    break;
+                }
+            }
         }
 
         if(shift_pressed)
@@ -111,11 +126,12 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
     }
     else
     {
-        g_keybd_state = SERV_KEYBD_STATE_RELEASED;
         g_shift_state = SERV_KEYBD_STATE_RELEASED;
         g_ctrl_state = SERV_KEYBD_STATE_RELEASED;
-        memset(g_keys_active_p, 0x00, SERV_KEYBD_SIMUL_KEYS + 1);
     }
+
+    g_key_event_ts = drv_timer_get_ms();
+    g_long_press_active = 0;
 }
 
 static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
@@ -126,7 +142,6 @@ static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 void serv_keybd_init()
 {
 	g_current_id = HOST_USER_DISCONNECTION;
-    g_keybd_state = SERV_KEYBD_STATE_RELEASED;
 
 	/* Init Host Library */
 	USBH_Init(&g_usbh_host, USBH_UserProcess, 0);
@@ -143,11 +158,30 @@ void serv_keybd_init()
 void serv_keybd_poll()
 {
     USBH_Process(&g_usbh_host);
-}
 
-serv_keybd_state_t serv_keybd_key_state()
-{
-    return g_keybd_state;
+    /* Check long press */
+    if(g_keys_active_p[0] != 0)
+    {
+        if(g_long_press_active)
+        {
+            if(g_key_event_ts + LONG_PRESS_ACTION_MS < drv_timer_get_ms())
+            {
+                if(g_key_event_fp)
+                {
+                    g_key_event_fp(g_keys_active_p[0], SERV_KEYBD_STATE_LONG_PRESS);
+                }
+                g_key_event_ts = drv_timer_get_ms();
+            }
+        }
+        else
+        {
+            if(g_key_event_ts + LONG_PRESS_MS < drv_timer_get_ms())
+            {
+                g_long_press_active = 1;
+                g_key_event_ts = drv_timer_get_ms();
+            }
+        }
+    }
 }
 
 serv_keybd_state_t serv_keybd_get_shift_state()
@@ -160,12 +194,7 @@ serv_keybd_state_t serv_keybd_get_ctrl_state()
     return g_ctrl_state;
 }
 
-uint8_t serv_keybd_get_active_key()
-{
-    return g_keys_active_p[0];
-}
-
-uint8_t *serv_keybd_get_active_keys()
+uint8_t *serv_keybd_get_key_array()
 {
     return g_keys_active_p;
 }
@@ -181,14 +210,14 @@ uint8_t serv_keybd_get_active_keys_hash()
            g_keys_active_p[6];
 }
 
-uint8_t serv_keybd_get_active_number_of_keys()
+uint8_t serv_keybd_get_ascii(char c)
 {
-    return g_keys_pressed;
+    return USBH_HID_GetASCIICode(c);
 }
 
-uint8_t serv_keybd_get_active_ascii_key()
+void serv_keybd_reg_key_event_fp_cb(key_event_t event)
 {
-    return USBH_HID_GetASCIICode(g_keys_active_p[0]);
+    g_key_event_fp = event;
 }
 
 if_keybd_map_t *serv_keybd_get_default_map()
@@ -197,7 +226,7 @@ if_keybd_map_t *serv_keybd_get_default_map()
 }
 
 /* Map USB keyboard scan codes */
-void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p)
+void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *map_p)
 {
     uint8_t keys_cnt = 0;
     char delimiter_p[2] = "\n";
@@ -221,9 +250,9 @@ void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p)
     matrix_y_p[0] = keys_pp[keys_cnt][5];
     matrix_y_p[1] = '\0';
 
-    keybd_map_p[keys_cnt].scan_code = strtoul(scan_code_p, NULL, 16);
-    keybd_map_p[keys_cnt].matrix_x = atoi(matrix_x_p);
-    keybd_map_p[keys_cnt].matrix_y = atoi(matrix_y_p);
+    map_p[keys_cnt].scan_code = strtoul(scan_code_p, NULL, 16);
+    map_p[keys_cnt].matrix_x = atoi(matrix_x_p);
+    map_p[keys_cnt].matrix_y = atoi(matrix_y_p);
 
     keys_cnt++;
 
@@ -243,9 +272,9 @@ void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p)
         matrix_y_p[0] = keys_pp[keys_cnt][5];
         matrix_y_p[1] = '\0';
 
-        keybd_map_p[keys_cnt].scan_code = strtoul(scan_code_p, NULL, 16);
-        keybd_map_p[keys_cnt].matrix_x = atoi(matrix_x_p);
-        keybd_map_p[keys_cnt].matrix_y = atoi(matrix_y_p);
+        map_p[keys_cnt].scan_code = strtoul(scan_code_p, NULL, 16);
+        map_p[keys_cnt].matrix_x = atoi(matrix_x_p);
+        map_p[keys_cnt].matrix_y = atoi(matrix_y_p);
 
         keys_cnt++;
 

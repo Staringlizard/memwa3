@@ -21,12 +21,16 @@
  */
 
 #include "serv_storage.h"
-#include "if.h"
+#include "serv_term.h"
 #include "romcc.h"
 #include "romdd.h"
+#include "drv_sdcard.h"
+#include "drv_ltdc.h"
 #include "serv_mem.h"
 #include "serv_keybd.h"
-#include "drv_sdcard.h"
+#include "ff.h"
+#include "if.h"
+#include <ctype.h>
 #include <stdlib.h>
 
 #define BUFFER_SIZE        0x1000
@@ -440,7 +444,7 @@ void serv_storage_read_config()
     }
 }
 
-void serv_storage_scan_files_cb(scanned_files_t cb)
+void serv_storage_reg_scan_files_cb(scanned_files_t cb)
 {
     g_scanned_files_fp = cb;
 }
@@ -561,7 +565,7 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
         *files_p = g_file_list_cnt;
         *entries_pp = g_file_list_p;
 
-        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found %d files when scanning %s", g_file_list_cnt, g_prog_path_pp[0]);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found %ld files when scanning %s", g_file_list_cnt, g_prog_path_pp[0]);
     }
     else
     {

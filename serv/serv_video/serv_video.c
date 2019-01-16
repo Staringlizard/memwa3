@@ -21,11 +21,12 @@
  */
 
 #include "serv_video.h"
-#include "if.h"
 #include "serv_mem.h"
 #include "drv_ltdc.h"
 #include "drv_rng.h"
 #include "dev_tda19988.h"
+#include "if.h"
+#include "serv_term.h"
 
 #define SCREEN_X2
 #define SCREEN_WIDTH            SERV_VIDEO_SCREEN_WIDTH

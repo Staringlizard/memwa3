@@ -25,10 +25,6 @@
 #define _SERV_STORAGE_H
 
 #include "stm32h7xx_hal.h"
-#include "serv_term.h"
-#include "ff.h"
-#include <stdio.h>
-#include <ctype.h>
 
 #define MAX_FNAME_LEN   48
 
@@ -52,7 +48,7 @@ typedef struct
 void serv_storage_init();
 void serv_storage_mount();
 void serv_storage_read_config();
-void serv_storage_scan_files_cb(scanned_files_t cb);
+void serv_storage_reg_scan_files_cb(scanned_files_t cb);
 void serv_storage_unscan_files();
 uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *files_p);
 void serv_storage_files_filter(serv_storage_file_t *entries_p, uint32_t *files_p, serv_storage_file_t **result_pp, char *filter_p);

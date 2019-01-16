@@ -24,7 +24,6 @@
 #define _HAL_CONF_H
 
 #include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal_gpio.h"
 
 #define SDCARD_CD_PIN   GPIO_PIN_7
 #define SDCARD_CD_PORT  GPIOA   

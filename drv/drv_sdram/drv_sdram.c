@@ -25,8 +25,8 @@
  * Responsible for extended SDRAM.
  */
 
-#include "drv_sdram.h"
 #include "hal_msp.h"
+#include "drv_sdram.h"
 #include "serv_term.h"
 
 #define SDRAM_MODEREG_BURST_LENGTH_1             ((uint16_t)0x0000)

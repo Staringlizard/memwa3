@@ -28,21 +28,16 @@
  */
 
 #include "hostif.h"
+#include "drv_sidbus.h"
 #include "drv_rng.h"
 #include "drv_led.h"
-#include "hal_msp.h"
-#include "diag.h"
-#include "usbh_core.h"
-#include "usbh_hid_keybd.h"
+#include "drv_crc.h"
 #include "serv_term.h"
-#include "serv_keybd.h"
 #include "serv_video.h"
 #include "if.h"
-#include "romcc.h"
 #include "ff.h"
-#include "drv_crc.h"
-#include "drv_sidbus.h"
 #include "fsm.h"
+#include <stdlib.h>
 
 uint32_t *if_host_filesys_open(char *path_p, uint8_t mode);
 void if_host_filesys_close(uint32_t *fd_p);

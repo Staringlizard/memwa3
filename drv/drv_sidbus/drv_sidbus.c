@@ -26,9 +26,8 @@
  * Responsible for the connection with sid hw.
  */
 
-#include "drv_sidbus.h"
-#include "stm32h7xx_hal_gpio.h"
 #include "hal_conf.h"
+#include "drv_sidbus.h"
 #include "drv_rng.h"
 #include "drv_led.h"
 #include "serv_term.h"
@@ -61,6 +60,14 @@ void drv_sidbus_irq()
         case SIDBUS_STATE_ACTIVATE_CHIP:
             SID_SET_CS_LOW();
             g_sidbus_state = SIDBUS_STATE_DATA_SENT;
+
+            /* Enable sidbus IRQ
+             * Seems that race condition can happen here
+             * where another interrupt is incoming and is
+             * executed directly after the case where the
+             * interrupt has been disabled.
+             */
+            EXTI->FTSR1 |= GPIO_PIN_13;
             break;
         case SIDBUS_STATE_DATA_SENT:
             SID_SET_CS_HIGH();

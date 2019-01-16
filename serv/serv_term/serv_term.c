@@ -32,7 +32,6 @@
 #include "fsm.h"
 #include "drv_i2c.h"
 #include "dev_tda19988.h"
-#include "usbd_core.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
 #include <string.h>
@@ -63,21 +62,21 @@ typedef enum
 
 static char *g_cmd_list_ap[CMD_MAX+1] =
 {
-    "i2c_cec_r",
-    "i2c_cec_w",
-    "i2c_hdmi_r",
-    "i2c_hdmi_w",
-    "mem_r",
-    "mem_w",
+    "tcr",
+    "tcw",
+    "thr",
+    "thw",
+    "mr",
+    "mw",
     NULL
 };
 
-static char *g_term_help_p = "[i2c_cec_r <reg>], read tda19988 register\r" \
-                             "[i2c_cec_w <reg> <val>], write tda19988 register\r" \
-                             "[i2c_hdmi_w <reg>], read tda19988 register\r" \
-                             "[i2c_hdmi_w <reg> <val>], write tda19988 register\r" \
-                             "[mem_r <addr>], read memory address\r" \
-                             "[mem_w <addr> <val>], write to memory address\r";
+static char *g_term_help_p = "[tcr <reg>], read tda19988 cec register\r" \
+                             "[tcw <reg> <val>], write tda19988 cec register\r" \
+                             "[thr <reg>], read tda19988 hdmi register\r" \
+                             "[thw <reg> <val>], write tda19988 hdmi register\r" \
+                             "[mr <addr>], read memory address\r" \
+                             "[mw <addr> <val>], write to memory address\r";
 
 static char g_cmd_input_str_p[TERM_CMD_MAX];
 static uint32_t g_cmd_input_cnt = 0;
@@ -150,11 +149,11 @@ static void interpret(char *buf, uint32_t len)
 
             if(res == DRV_I2C_STATUS_OK)
             {
-                printf("reading 0x%02X from register 0x%02X", val, reg);
+                printf("reading 0x%02X from tda19988 register 0x%02X", val, reg);
             }
             else
             {
-                printf("failed to read register!");
+                printf("failed to read tda19988 register!");
             }
         }
         break;
@@ -182,11 +181,11 @@ static void interpret(char *buf, uint32_t len)
 
             if(res == DRV_I2C_STATUS_OK)
             {
-                printf("writing 0x%02X to register 0x%02X", val, reg);
+                printf("writing 0x%02X to tda19988 register 0x%02X", val, reg);
             }
             else
             {
-                printf("failed to write register!");   
+                printf("failed to write tda19988 register!");   
             }
         }
         break;
@@ -202,7 +201,7 @@ static void interpret(char *buf, uint32_t len)
 
             addr = term_atoi(argsv_pp[1]);
             val = *(uint8_t *)addr;
-            printf("reading 0x%02X from address 0x%02X", val, (unsigned int)addr);
+            printf("reading 0x%02X from mem address 0x%02X", val, (unsigned int)addr);
         }
         break;
         case CMD_MEM_WRITE:
@@ -218,7 +217,7 @@ static void interpret(char *buf, uint32_t len)
             addr = term_atoi(argsv_pp[1]);
             val = term_atoi(argsv_pp[2]);
             *(uint8_t *)addr = val;
-            printf("writing 0x%02X to address 0x%02X", val, (unsigned int)addr);
+            printf("writing 0x%02X to mem address 0x%02X", val, (unsigned int)addr);
         }
         break;
     default:
@@ -230,14 +229,14 @@ static void interpret(char *buf, uint32_t len)
 }
 
 /* Remember to only use one flush */
-static void receive(uint8_t *buf, uint32_t len)
+static void receive(uint8_t *buf_p, uint32_t len)
 {
     uint8_t i;
 
     /* Ignore head backspace char */
-    while(buf[0] == '\177' && g_cmd_input_cnt == 0)
+    while(buf_p[0] == '\177' && g_cmd_input_cnt == 0)
     {
-        buf++;
+        buf_p++;
         len--;
         
         if(len == 0)
@@ -254,7 +253,7 @@ static void receive(uint8_t *buf, uint32_t len)
         return;
     }
 
-    memcpy(g_cmd_input_str_p + g_cmd_input_cnt, buf, len);
+    memcpy(g_cmd_input_str_p + g_cmd_input_cnt, buf_p, len);
 
     g_cmd_input_cnt += len;
 
@@ -299,7 +298,7 @@ static void receive(uint8_t *buf, uint32_t len)
     }
 
     /* Remote echo */
-    CDC_Itf_Send((uint8_t *)buf, len);
+    CDC_Itf_Send((uint8_t *)buf_p, len);
     CDC_Itf_Flush();
 }
 
@@ -375,6 +374,11 @@ uint32_t serv_term_get_rows()
 void serv_term_clear_rows()
 {
     clear_all_rows();
+}
+
+void serv_term_receive(uint8_t *buf_p, uint32_t len)
+{
+    receive(buf_p, len);
 }
 
 /* So that printf() will output on this device */

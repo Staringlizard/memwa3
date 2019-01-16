@@ -31,14 +31,6 @@
  */
 
 #include "hal_msp.h"
-#include "stm32h7xx_hal_rcc_ex.h"
-#include "stm32h7xx_hal_gpio.h"
-#include "stm32h7xx_hal_i2c_ex.h"
-#include "stm32h7xx_hal_sdram.h"
-#include "stm32h7xx_hal_flash.h"
-#include "drv_sdram.h"
-#include "drv_joyst.h"
-#include <string.h>
 
 void HAL_CRC_MspInit(CRC_HandleTypeDef *hcrc)
 {

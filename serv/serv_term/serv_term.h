@@ -60,5 +60,6 @@ void serv_term_init();
 char *serv_term_get_row(uint32_t row);
 uint32_t serv_term_get_rows();
 void serv_term_clear_rows();
+void serv_term_receive(uint8_t *buf_p, uint32_t len);
 
 #endif

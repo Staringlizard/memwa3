@@ -22,8 +22,8 @@
 
 #include "serv_mem.h"
 #include "hal_conf.h"
-#include "if.h"
 #include "dev_is42s16400j.h"
+#include "if.h"
 
 /*
 void *ff_memalloc(uint32_t size)

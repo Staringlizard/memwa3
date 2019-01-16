@@ -21,7 +21,6 @@
  */
 
 #include "drv_i2c.h"
-#include "stm32h7xx_hal_i2c.h"
 #include "serv_term.h"
 
 #define I2C_OWN_ADDRESS    0x00

@@ -26,8 +26,8 @@
  */
 
 #include "drv_joyst.h"
-#include "if.h"
 #include "serv_term.h"
+#include "if.h"
 
 extern if_emu_cc_t g_if_cc_emu;
 

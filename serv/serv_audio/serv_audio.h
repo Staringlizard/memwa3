@@ -26,7 +26,6 @@
 
 #include "stm32h7xx_hal.h"
 #include "serv_term.h"
-#include <stdio.h>
 
 void serv_audio_init();
 

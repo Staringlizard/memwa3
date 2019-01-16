@@ -25,8 +25,6 @@
 #define _SERV_VIDEO_H
 
 #include "stm32h7xx_hal.h"
-#include "serv_term.h"
-#include <stdio.h>
 
 #define SERV_VIDEO_SCREEN_WIDTH            800
 #define SERV_VIDEO_SCREEN_HEIGHT           600

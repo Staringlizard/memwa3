@@ -38,8 +38,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "diskio.h"
 #include "hal_msp.h"
-#include "stm32h7xx_hal_dma.h"
-#include "stm32h7xx_hal_sd.h"
 
 #define BLOCK_SIZE     512
 static uint8_t initialized;

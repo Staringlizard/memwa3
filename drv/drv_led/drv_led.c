@@ -25,8 +25,8 @@
  * Responsible for the rgb led indicator.
  */
 
-#include "drv_led.h"
 #include "hal_conf.h"
+#include "drv_led.h"
 #include "serv_term.h"
 
 static uint8_t g_red;

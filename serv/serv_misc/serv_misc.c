@@ -21,12 +21,12 @@
  */
 
 #include "serv_misc.h"
-#include "if.h"
 #include "hal_msp.h"
 #include "drv_led.h"
 #include "drv_crc.h"
 #include "drv_rng.h"
 #include "drv_timer.h"
+#include "if.h"
 
 void serv_misc_init()
 {

@@ -34,20 +34,22 @@
 typedef enum
 {
     SERV_KEYBD_STATE_RELEASED,
-    SERV_KEYBD_STATE_PRESSED
+    SERV_KEYBD_STATE_PRESSED,
+    SERV_KEYBD_STATE_LONG_PRESS,
 } serv_keybd_state_t;
+
+typedef void (*key_event_t)(uint8_t key, serv_keybd_state_t state);
 
 void serv_keybd_init();
 void serv_keybd_poll();
 serv_keybd_state_t serv_keybd_key_state();
 serv_keybd_state_t serv_keybd_get_shift_state();
 serv_keybd_state_t serv_keybd_get_ctrl_state();
-uint8_t serv_keybd_get_active_key();
-uint8_t *serv_keybd_get_active_keys();
+uint8_t *serv_keybd_get_key_array();
 uint8_t serv_keybd_get_active_keys_hash();
-uint8_t serv_keybd_get_active_number_of_keys();
-uint8_t serv_keybd_get_active_ascii_key();
+void serv_keybd_reg_key_event_fp_cb(key_event_t event);
+uint8_t serv_keybd_get_ascii(char c);
 if_keybd_map_t *serv_keybd_get_default_map();
-void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *keybd_map_p);
+void serv_keybd_populate_map(uint8_t *conf_text, if_keybd_map_t *map_p);
 
 #endif
