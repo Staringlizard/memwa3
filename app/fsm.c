@@ -465,16 +465,16 @@ static void draw_info_field()
                          0,
                          0);
 
-    sprintf(tmp_p, "disk drive on: %s %c ", g_disk_drive_on ? "yes":"no", g_led ? 'O':' ');
+    sprintf(tmp_p, "disk drive on: %s", g_disk_drive_on ? "yes":"no ");
 
     serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
-                         14,
+                         g_led ? 15 : 14,
                          0,
                          tmp_p,
                          INFO_SEPARATOR_DISTANCE*1,
                          0);
 
-    sprintf(tmp_p, "lock freq: %s ", g_lock_freq_pal ? "yes":"no");
+    sprintf(tmp_p, "lock freq: %s", g_lock_freq_pal ? "yes":"no ");
 
     serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
                          14,
@@ -483,7 +483,7 @@ static void draw_info_field()
                          INFO_SEPARATOR_DISTANCE*2,
                          0);
 
-    sprintf(tmp_p, "limit emu: %s ", g_limit_frame_rate ? "yes":"no");
+    sprintf(tmp_p, "skip frames: %s", g_limit_frame_rate ? "yes":"no ");
 
     serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
                          14,
@@ -492,7 +492,7 @@ static void draw_info_field()
                          INFO_SEPARATOR_DISTANCE*3,
                          0);
 
-    sprintf(tmp_p, "tape play: %s ", g_tape_play ? "yes":"no");
+    sprintf(tmp_p, "tape play: %s", g_tape_play ? "yes":"no ");
 
     serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
                          14,
@@ -792,6 +792,9 @@ void fsm_state_term(fsm_event_t e, uint32_t edata1, uint32_t edata2)
             serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
             serv_term_clear_rows();
             g_term_row = 0;
+            break;
+        case KEY_F12:
+            reset_mcu();
             break;
         default:
             {

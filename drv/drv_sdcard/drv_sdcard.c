@@ -47,7 +47,7 @@ void drv_sdcard_init()
 
     if(res != HAL_SD_ERROR_NONE)
     {
-        while(1) {;}
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "failed to initiate sdcard (inserted?) errno %ld!", res);
     }
 }
 

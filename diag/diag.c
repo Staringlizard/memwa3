@@ -42,11 +42,13 @@
 
 #define TEST_FILE               "testfile"
 #define TEST_PATTERN_REPS       1000
-#define TEST_TDA19988_WRITE_REG  0x96
+#define TEST_TDA19988_WRITE_REG 0x96
 #define TEST_SDRAM_START_ADDR   SDRAM_ADDR
 #define TEST_SDRAM_SIZE         0x800000
 #define TEST_SCREEN_WIDTH       800
 #define TEST_SCREEN_HEIGHT      600
+
+extern void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p);
 
 static FATFS fatfs;
 static FIL fil;
@@ -205,50 +207,33 @@ static tda19988_status_t tda19988_run()
     return tda19988_status;
 }
 
-static void ltdc_run()
+diag_status_t diag_video()
 {
-    uint32_t *ltdc_p = (uint32_t *)TEST_SDRAM_START_ADDR;
-    uint32_t i;
-    uint32_t k;
-    uint32_t j;
-    uint32_t color;
+    diag_status_t diag_status = DIAG_STATUS_OK;
+    tda19988_status_t tda19988_status = DIAG_TDA19988_STATUS_OK;
 
-    drv_ltdc_disable_clut(0);
-    drv_ltdc_disable_clut(1);
+    /* tda19988 (I2C) functionality */
+    tda19988_status = tda19988_run();
 
-    drv_ltdc_set_memory(0, TEST_SDRAM_START_ADDR);
-
-    drv_ltdc_set_layer(0,
-                   0,
-                   TEST_SCREEN_WIDTH,
-                   0,
-                   TEST_SCREEN_HEIGHT,
-                   TEST_SCREEN_WIDTH,
-                   TEST_SCREEN_HEIGHT,
-                   255,
-                   LTDC_PIXEL_FORMAT_ARGB8888);
-
-    for(i = 0; i < TEST_SCREEN_HEIGHT; i++)
+    if(tda19988_status != DIAG_TDA19988_STATUS_OK)
     {
-        color = 0x800000;
-        for(k = 0; k < 24; k++)
-        {
-            for(j = 0; j < TEST_SCREEN_WIDTH/24; j++)
-            {
-                *(ltdc_p + i * TEST_SCREEN_WIDTH + k * TEST_SCREEN_WIDTH/24 + j) = color | 0xFF000000;
-            }
-            color >>= 1;
-        }
+        diag_status = DIAG_STATUS_ERROR_I2C;
+        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "diag video: NOK");
+        goto exit;
+    }
+    else
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag video: OK");
     }
 
-    drv_ltdc_activate_layer(0);
-}   
+exit:
+    return diag_status;
+}
 
-diag_status_t diag_run()
+diag_status_t diag_sdram()
 {
     diag_status_t diag_status = DIAG_STATUS_OK;
     sdram_status_t sdram_status = DIAG_SDRAM_STATUS_OK;
-    tda19988_status_t tda19988_status = DIAG_TDA19988_STATUS_OK;
 
     /* SRAM functionality */
     sdram_status = sdram_run();
@@ -261,31 +246,14 @@ diag_status_t diag_run()
     }
     else
     {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag sdram: OK");
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag sdram: OK (press ctrl + F12 to restart)");
     }
-
-    /* tda19988 (I2C) functionality */
-    tda19988_status = tda19988_run();
-
-    if(tda19988_status != DIAG_TDA19988_STATUS_OK)
-    {
-        diag_status = DIAG_STATUS_ERROR_I2C;
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "diag tda19988: NOK");
-        goto exit;
-    }
-    else
-    {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "diag tda19988: OK");
-    }
-
-    /* Display test screen for optical inspection */
-    ltdc_run();
 
 exit:
     return diag_status;
 }
 
-diag_status_t diag_sdcard_run()
+diag_status_t diag_sdcard()
 {
     diag_status_t diag_status = DIAG_STATUS_OK;
     sdcard_status_t sdcard_status = DIAG_SDCARD_STATUS_OK;

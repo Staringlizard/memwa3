@@ -39,7 +39,8 @@ typedef enum
 	DIAG_STATUS_ERROR_KEYBOARD,
 } diag_status_t;
 
-diag_status_t diag_run();
-diag_status_t diag_sdcard_run();
+diag_status_t diag_video();
+diag_status_t diag_sdram();
+diag_status_t diag_sdcard();
 
 #endif

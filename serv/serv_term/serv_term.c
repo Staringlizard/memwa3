@@ -34,6 +34,7 @@
 #include "dev_tda19988.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
+#include "diag.h"
 #include <string.h>
 
 #define STDOUT_FILENO 	1
@@ -57,6 +58,9 @@ typedef enum
     CMD_I2C_HDMI_WRITE,
     CMD_MEM_READ,
     CMD_MEM_WRITE,
+    CMD_DIAG_VIDEO,
+    CMD_DIAG_SDCARD,
+    CMD_DIAG_SDRAM,
     CMD_MAX
 } cmd_t;
 
@@ -68,6 +72,9 @@ static char *g_cmd_list_ap[CMD_MAX+1] =
     "thw",
     "mr",
     "mw",
+    "dv",
+    "dsc",
+    "dsr",
     NULL
 };
 
@@ -76,7 +83,10 @@ static char *g_term_help_p = "[tcr <reg>], read tda19988 cec register\r" \
                              "[thr <reg>], read tda19988 hdmi register\r" \
                              "[thw <reg> <val>], write tda19988 hdmi register\r" \
                              "[mr <addr>], read memory address\r" \
-                             "[mw <addr> <val>], write to memory address\r";
+                             "[mw <addr> <val>], write to memory address\r" \
+                             "[dv], video diag\r" \
+                             "[dsc], sdcard diag\r" \
+                             "[dsr], sdram diag (reset needed!)\r";
 
 static char g_cmd_input_str_p[TERM_CMD_MAX];
 static uint32_t g_cmd_input_cnt = 0;
@@ -219,6 +229,15 @@ static void interpret(char *buf, uint32_t len)
             *(uint8_t *)addr = val;
             printf("writing 0x%02X to mem address 0x%02X", val, (unsigned int)addr);
         }
+        break;
+        case CMD_DIAG_VIDEO:
+            diag_video();
+        break;
+        case CMD_DIAG_SDCARD:
+            diag_sdcard();
+        break;
+        case CMD_DIAG_SDRAM:
+            diag_sdram();
         break;
     default:
         printf("%s", g_term_help_p);

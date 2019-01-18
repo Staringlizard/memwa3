@@ -63,33 +63,13 @@ int main()
     drv_joyst_init();
 
     serv_mem_init();
+    serv_term_init();
     serv_storage_init();
     serv_storage_mount();
     serv_video_init();
     serv_audio_init();
     serv_keybd_init();
-    serv_term_init();
     serv_misc_init();
-/*
-    diag_status = diag_run();
-    if(diag_status != DIAG_STATUS_OK)
-    {
-        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Diagnostic failed with code %d!", diag_status);
-        drv_led_set(1, 0, 0);
-        while(1) {;}
-    }
-
-    if(drv_sdcard_inserted() == 1)
-    {
-        diag_status = diag_sdcard_run();
-        if(diag_status != DIAG_STATUS_OK)
-        {
-            serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Diagnostic failed with code %d!", diag_status);
-            drv_led_set(1, 0, 0);
-            while(1) {;}
-        }
-    }
-*/
     serv_storage_read_config();
     serv_video_en();
 

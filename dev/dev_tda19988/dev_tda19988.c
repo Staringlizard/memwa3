@@ -370,7 +370,7 @@ static void write_reg_16(uint8_t i2c_addr, uint16_t mem_addr, uint16_t val)
     }
 }
 
-static void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p)
+void read_reg_8(uint8_t i2c_addr, uint16_t mem_addr, uint8_t *val_p)
 {
     uint8_t reg = REG(mem_addr);
     handle_paging(i2c_addr, mem_addr);
