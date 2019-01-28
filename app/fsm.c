@@ -56,12 +56,17 @@
 #define KEY_ARROW_DOWN  0x51
 #define KEY_ARROW_UP    0x52
 
+#define COLOR_TXT_FILT_FG   5
+#define COLOR_TXT_FILT_BG   0
 #define COLOR_TXT_FG        12
 #define COLOR_TXT_BG        0
 #define COLOR_MARKER_FG     6
 #define COLOR_MARKER_BG     0
 
 #define INFO_SEPARATOR_DISTANCE  120
+
+#define FILTER_TEXT_X_POS        100
+#define FILTER_TEXT_Y_POS        80
 
 #define STATES_MAX              4
 
@@ -103,12 +108,12 @@ static uint8_t g_disk_drive_on;
 static uint8_t g_lock_freq_pal = 1;
 static uint8_t g_limit_frame_rate = 0; /* Emulator can half its emulated frame rate to gain performance */
 static uint8_t g_tape_play;
-static serv_storage_file_t *g_files_p;
-static serv_storage_file_t *g_files_filt_p;
-static uint32_t g_files_filt;
-static uint32_t g_files;
+static serv_storage_file_t *g_file_cnt_p;
+static serv_storage_file_t *g_file_filt_cnt_p;
+static uint32_t g_file_filt_cnt;
+static uint32_t g_file_cnt;
 static char g_filter_p[MAX_FILTER];
-static uint32_t g_filter_cnt;
+static uint32_t g_char_filter_cnt;
 static marker_t g_marker;
 static uint32_t g_page;
 static file_list_t g_current_file_list;
@@ -116,6 +121,7 @@ static uint32_t g_fps;
 static uint8_t g_led;
 static uint32_t g_term_row;
 static uint8_t g_info;
+static uint8_t g_file_path_ind;
 
 static transition_t trans_pp[STATES_MAX][STATES_MAX] =
 {
@@ -181,40 +187,62 @@ static void filter_changed(char key, uint8_t add)
 {
     if(add)
     {
-        if(g_filter_cnt < MAX_FILTER)
+        if(g_char_filter_cnt < MAX_FILTER)
         {
-            g_files_filt = g_files;
+            g_file_filt_cnt = g_file_cnt;
 
-            g_filter_p[g_filter_cnt] = key;
-            g_filter_cnt++;
+            g_filter_p[g_char_filter_cnt] = key;
+            g_char_filter_cnt++;
 
-            serv_storage_files_filter(g_files_p, &g_files_filt, &g_files_filt_p, g_filter_p);
-            g_current_file_list.files_p = g_files_filt_p;
-            g_current_file_list.files = g_files_filt;
+            serv_storage_files_filter(g_file_cnt_p, &g_file_filt_cnt, &g_file_filt_cnt_p, g_filter_p);
+            g_current_file_list.files_p = g_file_filt_cnt_p;
+            g_current_file_list.files = g_file_filt_cnt;
         }
     }
     else
     {
-        if(g_filter_cnt > 0)
+        if(g_char_filter_cnt > 0)
         {
-            g_files_filt = g_files;
+            g_file_filt_cnt = g_file_cnt;
 
-            g_filter_cnt--;
-            g_filter_p[g_filter_cnt] = '\0';
+            g_char_filter_cnt--;
+            g_filter_p[g_char_filter_cnt] = '\0';
 
-            if(g_filter_cnt == 0)
+            if(g_char_filter_cnt == 0)
             {
-                g_current_file_list.files = g_files;
-                g_current_file_list.files_p = g_files_p;
+                g_file_filt_cnt = 0;
+                g_current_file_list.files = g_file_cnt;
+                g_current_file_list.files_p = g_file_cnt_p;
             }
             else
             {
-                serv_storage_files_filter(g_files_p, &g_files_filt, &g_files_filt_p, g_filter_p);
-                g_current_file_list.files_p = g_files_filt_p;
-                g_current_file_list.files = g_files_filt;
+                serv_storage_files_filter(g_file_cnt_p, &g_file_filt_cnt, &g_file_filt_cnt_p, g_filter_p);
+                g_current_file_list.files_p = g_file_filt_cnt_p;
+                g_current_file_list.files = g_file_filt_cnt;
             }
         }
     }
+}
+
+static void draw_filter_text()
+{
+    char text_p[128];
+
+    if(g_filter_p[0] != 0)
+    {
+        sprintf(text_p, "starts with: %s", g_filter_p);
+    }
+    else
+    {
+        sprintf(text_p, "               ");
+    }
+
+    serv_video_draw_text(SERV_VIDEO_LAYER_MISC,
+                         COLOR_TXT_FILT_FG,
+                         COLOR_TXT_FILT_BG,
+                         text_p,
+                         FILTER_TEXT_X_POS,
+                         FILTER_TEXT_Y_POS);
 }
 
 static void draw_list_member(uint32_t member)
@@ -238,9 +266,9 @@ static void draw_list()
     uint32_t i;
     uint32_t files = SERV_VIDEO_MISC_ROWS;
 
-    if(g_current_file_list.files < SERV_VIDEO_MISC_ROWS)
+    if((g_current_file_list.files - g_page*SERV_VIDEO_MISC_ROWS) < SERV_VIDEO_MISC_ROWS)
     {
-        files = g_current_file_list.files;
+        files = g_current_file_list.files - g_page*SERV_VIDEO_MISC_ROWS;
     }
 
     serv_video_clear_layer(SERV_VIDEO_LAYER_MISC);
@@ -285,20 +313,20 @@ static void clear_filter()
     uint32_t i;
 
     /* clear filter */
-    for(i = 0; i < g_filter_cnt; i++)
+    for(i = 0; i < g_char_filter_cnt; i++)
     {
         g_filter_p[i] = 0x00;
     }
 
-    g_filter_cnt = 0;
+    g_char_filter_cnt = 0;
 
     /* clear filter */
-    for(i = 0; i < g_files_filt; i++)
+    for(i = 0; i < g_file_filt_cnt; i++)
     {
-        memset(&g_files_filt_p[i], 0x00, sizeof(serv_storage_file_t));
+        memset(&g_file_filt_cnt_p[i], 0x00, sizeof(serv_storage_file_t));
     }
 
-    g_files_filt = 0;
+    g_file_filt_cnt = 0;
 }
 
 static void draw_marker()
@@ -396,6 +424,34 @@ static void list_down()
     }
 }
 
+static uint8_t list_left()
+{
+    if(g_file_path_ind > 0)
+    {
+        g_file_path_ind--;
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+static uint8_t list_right()
+{
+    uint8_t dirs = serv_storage_get_max_scan_dirs();
+
+    if(g_file_path_ind < dirs - 1)
+    {
+        g_file_path_ind++;
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
 static void list_pg_up()
 {
     if(g_page > 0)
@@ -434,6 +490,7 @@ static void list_filter_changed(uint8_t add, char c)
     filter_changed(serv_keybd_get_ascii(c), add);
     draw_list();
     draw_marker();
+    draw_filter_text();
 }
 
 static void fade_complete_cb(uint8_t layer, serv_video_fade_t fade)
@@ -520,6 +577,30 @@ static void draw_info_field()
                          tmp_p,
                          SERV_VIDEO_SCREEN_WIDTH - strlen(tmp_p)*SERV_VIDEO_FONT_WIDTH,
                          SERV_VIDEO_FONT_HEIGHT);
+}
+
+static void unload_list()
+{
+    g_page = 0;
+    g_file_cnt = 0;
+    g_marker.pos_phy = 0;
+    g_marker.pos_list = 0;
+    g_current_file_list.files_p = NULL;
+    serv_storage_unscan_files();
+}
+
+static void load_list()
+{
+    if(g_current_file_list.files_p == NULL)
+    {
+        g_page = 0;
+        serv_storage_scan_files(&g_file_cnt_p, &g_file_cnt, g_file_path_ind);
+    }
+    g_current_file_list.files_p = g_file_cnt_p;
+    g_current_file_list.files = g_file_cnt;
+    draw_list();
+    clear_filter();
+    draw_marker();
 }
 
 void fsm_init()
@@ -696,6 +777,20 @@ void fsm_state_list(fsm_event_t e, uint32_t edata1, uint32_t edata2)
         case KEY_ARROW_DOWN:
             list_down();
             break;
+        case KEY_ARROW_LEFT:
+            if(list_left() == 0)
+            {
+                unload_list();
+                load_list();
+            }
+            break;
+        case KEY_ARROW_RIGHT:
+            if(list_right() == 0)
+            {
+                unload_list();
+                load_list();
+            }
+            break;
         case KEY_PG_UP:
             list_pg_up();
             break;
@@ -715,16 +810,7 @@ void fsm_state_list(fsm_event_t e, uint32_t edata1, uint32_t edata2)
         if(edata1 == SERV_VIDEO_LAYER_EMU &&
            edata2 == SERV_VIDEO_FADE_DOWN)
         {
-            if(g_current_file_list.files_p == NULL)
-            {
-                g_page = 0;
-                serv_storage_scan_files(&g_files_p, &g_files);
-            }
-            g_current_file_list.files_p = g_files_p;
-            g_current_file_list.files = g_files;
-            draw_list();
-            clear_filter();
-            draw_marker();
+            load_list();
         }
         break;
     case FSM_EVENT_SCAN_FILES:

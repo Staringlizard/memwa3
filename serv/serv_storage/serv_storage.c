@@ -33,12 +33,68 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#define BUFFER_SIZE        0x1000
-#define MAX_CLUT_SIZE      0x10
-#define MAX_FILES          (CC_FILES_SIZE/sizeof(serv_storage_file_t))
-#define MAX_FILES_FILTERED (CC_FILES_FILTERED_SIZE/sizeof(serv_storage_file_t))
+#define CC_RAM_OFFSET_MAX_SONG_NO  0x02
+#define SID_BASIC_START_ADDR    0x0801
+#define SID_DRIVER_START_ADDR   0x0820
+#define BUFFER_SIZE             0x1000
+#define MAX_CLUT_SIZE           0x10
+#define MAX_FILES               (CC_FILES_SIZE/sizeof(serv_storage_file_t))
+#define MAX_FILES_FILTERED      (CC_FILES_FILTERED_SIZE/sizeof(serv_storage_file_t))
 
-static char *g_rom_path_pp[4] =
+typedef struct
+{
+    uint16_t start_addr_c64;
+} __attribute__((packed)) prg_t;
+
+typedef struct
+{
+    uint16_t ver;
+    uint16_t entries;
+    uint16_t entries_used;
+    uint16_t reserved;
+    char name[0x18];
+} __attribute__((packed)) t64_dir_t;
+
+typedef struct
+{
+    uint8_t file_type_c64;
+    uint8_t file_type_1541;
+    uint16_t start_addr_c64;
+    uint16_t end_addr_c64;
+    uint16_t reserved1;
+    uint32_t start_addr_file;
+    uint32_t reserved2;
+    char c64_file_name[0x10];
+} __attribute__((packed)) t64_entry_t;
+
+typedef struct
+{
+    char* sign[0x20];
+    t64_dir_t dir;
+} __attribute__((packed)) t64_header_t;
+
+typedef struct
+{
+    char magic_id[4];
+    uint16_t ver;
+    uint16_t start_addr_file;
+    uint16_t start_addr_c64;
+    uint16_t init_addr;
+    uint16_t play_addr;
+    uint16_t songs;
+    uint16_t start_song;
+    uint32_t speed;
+    char name[32];
+    char author[32];
+    char released[32];
+    uint16_t flags;
+    uint8_t start_page;
+    uint8_t page_length;
+    uint8_t second_sid_addr;
+    uint8_t third_sid_addr;
+} __attribute__((packed)) sid_t;
+
+static char *g_rom_path_pp[] =
 {
   "0:/rom/cc_brom.bin",
   "0:/rom/cc_crom.bin",
@@ -46,15 +102,16 @@ static char *g_rom_path_pp[4] =
   "0:/rom/dd_dos.bin"
 };
 
-static char *g_conf_path_pp[2] =
+static char *g_conf_path_pp[] =
 {
   "0:/conf/palette.cfg",
   "0:/conf/key.cfg"
 };
 
-static char *g_prog_path_pp[1] =
+static char *g_load_path_pp[] =
 {
-  "0:/prog"
+  "0:/prog",
+  "0:/sid"
 };
 
 static FATFS g_fatfs;
@@ -68,6 +125,7 @@ static uint32_t g_sel_file;
 static uint32_t g_sel_page;
 static FIL *g_fd_p;
 static scanned_files_t g_scanned_files_fp;
+static uint8_t g_index;
 
 static char *get_filename_ext(char *filename)
 {
@@ -86,12 +144,11 @@ static int strcicmp(char const *a, char const *b, int len)
     }
 }
 
-static uint8_t process_file(FIL *fd_p, serv_storage_file_type_t type)
+static uint8_t process_file(FIL *fd_p, serv_storage_file_type_t type, uint32_t size)
 {
     FRESULT res = FR_OK;
-    uint8_t return_val = 1;
+    uint8_t return_val = 0;
     uint32_t bytes_read;
-    uint16_t start_address;
 
     /* only one file can be opened at a time */
     if(g_fd_p != NULL)
@@ -105,145 +162,239 @@ static uint8_t process_file(FIL *fd_p, serv_storage_file_type_t type)
     switch(type)
     {
         case SERV_STORAGE_FILE_TYPE_T64:
+        {
+            t64_header_t header = {0};
+            t64_entry_t entry = {0};
+
+            uint8_t i;
+
+            /* Read header which is not used atm */
+            res = f_read(fd_p, &header, 0x40, (void *)&bytes_read);
+
+            if(res != FR_OK || bytes_read != 0x40)
             {
-                uint8_t header_p[0x40];
-                uint8_t entry_p[0x20];
-                uint16_t end_address;
-                uint16_t entry_size;
-                uint32_t entry_offset;
+                return_val = 1;
+                goto exit;
+            }
 
-                uint8_t i;
+            /* Get number of files in container */
+            //files = header_p[0x24];
 
-                /* Read header which is not used atm */
-                res = f_read(fd_p, header_p, 0x40, (void *)&bytes_read);
-
-                if(res != FR_OK || bytes_read != 0x40)
+            /* Just step through the first file */
+            for(i = 0; i < 1; i++)
+            {
+                /* Go to the start position for the entries */
+                res = f_lseek(fd_p, 0x40 + 0x20 * i);
+                if(res != FR_OK)
                 {
-                    return_val = 0;
+                    return_val = 1;
                     goto exit;
                 }
-
-                /* Get number of files in container */
-                //files = header_p[0x24];
-
-                /* Just step through the first file */
-                for(i = 0; i < 1; i++)
-                {
-                    /* Go to the start position for the entries */
-                    res = f_lseek(fd_p, 0x40 + 0x20 * i);
-                    if(res != FR_OK)
-                    {
-                        return_val = 0;
-                        goto exit;
-                    }
-
-                    /* Read entry information */
-                    res = f_read(fd_p, entry_p, 0x20, (void *)&bytes_read);
-
-                    if(res != FR_OK || bytes_read != 0x20)
-                    {
-                        return_val = 0;
-                        goto exit;
-                    }
-
-                    /*
-                     * From T64 specification:
-                     * In reality any value that is not a $00 is seen as a
-                     * PRG file.
-                     */
-                    if(entry_p[1] == 0x00)
-                    {
-                        /* This file is not PRG */
-                        return_val = 0;
-                        goto exit;
-                    }
-
-                    /* Get start address */
-                    start_address = entry_p[0x3] << 8;
-                    start_address += entry_p[0x2];
-
-                    /*
-                     * From T64 specification:
-                     * If the file is a snapshot, the address will be 0.
-                     */
-                    if(start_address == 0x0)
-                    {
-                        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 snapshots are not supported!");
-                    }
-
-                    /* Get end address */
-                    end_address = entry_p[0x5] << 8;
-                    end_address += entry_p[0x4];
-
-                    /*
-                     * From T64 specification:
-                     * As mentioned previously, there are faulty T64 files around
-                     * with the 'end load address' value set to $C3C6.
-                     */
-                    if(end_address == 0xC3C6)
-                    {
-                        serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 file is corrupt!");
-                    }
-
-                    /* Calculate size of entry */
-                    entry_size = end_address - start_address;
-
-                    entry_offset = entry_p[0xb] << 24;
-                    entry_offset += entry_p[0xa] << 16;
-                    entry_offset += entry_p[0x9] << 8;
-                    entry_offset += entry_p[0x8];
-
-                    /* Go to the start position for the entry in file */
-                    res = f_lseek(fd_p, entry_offset);
-                    if(res != FR_OK)
-                    {
-                        return_val = 0;
-                        goto exit;
-                    }
-
-                    /* Start writing into the ram memory, which we gave to emulator at startup */
-                    res = f_read(fd_p, (uint8_t *)(CC_RAM_BASE_ADDR + start_address), entry_size, (void *)&bytes_read);
-
-                    if(res != FR_OK || bytes_read != entry_size)
-                    {
-                        return_val = 0;
-                        goto exit;
-                    }
-                }
-            }
-            break;
-        case SERV_STORAGE_FILE_TYPE_PRG:
-            {
-                uint8_t entry_p[0x4];
 
                 /* Read entry information */
-                res = f_read(fd_p, entry_p, 2, (void *)&bytes_read);
+                res = f_read(fd_p, &entry, 0x20, (void *)&bytes_read);
 
-                if(res != FR_OK || bytes_read != 2)
+                if(res != FR_OK || bytes_read != 0x20)
                 {
-                    return_val = 0;
+                    return_val = 1;
                     goto exit;
                 }
 
-                start_address = entry_p[0] + (entry_p[1] << 8);
-
-                /* These kind of file is just loaded right into emu memory */
-                res = f_read(fd_p, (uint8_t *)(CC_RAM_BASE_ADDR + start_address), 0x10000, (void *)&bytes_read);
-
-                if(res != FR_OK || bytes_read == 0)
+                /*
+                 * From T64 specification:
+                 * In reality any value that is not a $00 is seen as a
+                 * PRG file.
+                 */
+                if(entry.file_type_1541 == 0x00)
                 {
-                    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read PRG file!");
-                    return_val = 0;
+                    /* This file is not PRG */
+                    return_val = 1;
+                    goto exit;
+                }
+
+                /*
+                 * From T64 specification:
+                 * If the file is a snapshot, the address will be 0.
+                 */
+                if(entry.start_addr_c64 == 0x0)
+                {
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 snapshots are not supported!");
+                }
+
+                /*
+                 * From T64 specification:
+                 * As mentioned previously, there are faulty T64 files around
+                 * with the 'end load address' value set to $C3C6.
+                 */
+                if(entry.end_addr_c64 == 0xC3C6)
+                {
+                    serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "T64 file is corrupt!");
+                }
+
+                /* Go to the start position for the entry in file */
+                res = f_lseek(fd_p, entry.start_addr_file);
+                if(res != FR_OK)
+                {
+                    return_val = 1;
+                    goto exit;
+                }
+
+                /* Start writing into the ram memory, which we gave to emulator at startup */
+                res = f_read(fd_p, (uint8_t *)(CC_RAM_BASE_ADDR + entry.start_addr_c64), entry.end_addr_c64 - entry.start_addr_c64, (void *)&bytes_read);
+
+                if(res != FR_OK || bytes_read != entry.end_addr_c64 - entry.start_addr_c64)
+                {
+                    return_val = 1;
                     goto exit;
                 }
             }
-            break;
+        }
+        break;
+        case SERV_STORAGE_FILE_TYPE_PRG:
+        {
+            prg_t prg;
+
+            /* Read entry information */
+            res = f_read(fd_p, &prg, 2, (void *)&bytes_read);
+
+            if(res != FR_OK || bytes_read != 2)
+            {
+                return_val = 1;
+                goto exit;
+            }
+
+            /* These kind of file is just loaded right into emu memory */
+            res = f_read(fd_p, (uint8_t *)(CC_RAM_BASE_ADDR + prg.start_addr_c64), 0x10000, (void *)&bytes_read);
+
+            if(res != FR_OK || bytes_read == 0)
+            {
+                serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read PRG file!");
+                return_val = 1;
+                goto exit;
+            }
+        }
+        break;
         case SERV_STORAGE_FILE_TYPE_TAP:
             g_if_cc_emu.if_emu_cc_tape_drive.tape_drive_load_fp((uint32_t *)fd_p);
-            break;
+        break;
         case SERV_STORAGE_FILE_TYPE_D64:
             g_if_dd_emu.if_emu_dd_disk_drive.disk_drive_load_fp((uint32_t *)fd_p);
-            break;
+        break;
+        case SERV_STORAGE_FILE_TYPE_SID:
+        {
+            sid_t *sid_p;
+            prg_t sid_prg;
+            uint16_t endian;
+            uint8_t *sid_payload_p;
+            uint8_t *file_data_p = calloc(1, size);
+
+            res = f_read(fd_p, file_data_p, size, (void *)&bytes_read);
+
+            if(res != FR_OK || bytes_read == 0)
+            {
+                serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Failed to read SID file!");
+                return_val = 1;
+                goto exit;
+            }
+
+            sid_p = (sid_t *)file_data_p;
+
+            endian = sid_p->ver;
+            sid_p->ver = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->start_addr_file;
+            sid_p->start_addr_file = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->start_addr_c64;
+            sid_p->start_addr_c64 = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->init_addr;
+            sid_p->init_addr = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->play_addr;
+            sid_p->play_addr = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->songs;
+            sid_p->songs = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->start_song;
+            sid_p->start_song = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->speed;
+            sid_p->speed = (endian >> 8) | (endian << 8);
+
+            endian = sid_p->flags;
+            sid_p->flags = (endian >> 8) | (endian << 8);
+
+            sid_payload_p = &file_data_p[sid_p->start_addr_file];
+
+            if((sid_p->flags & 0x0C) != 0x04)
+            {
+                serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Sid is not PAL, it will not be played at correct speed!");
+            }
+
+            if((sid_p->init_addr >= 0xA000 &&
+                sid_p->init_addr <= 0xBFFF) ||
+                (sid_p->init_addr >= 0xD000 &&
+                sid_p->init_addr <= 0xFFFF))
+            {
+                serv_term_printf(SERV_TERM_PRINT_TYPE_ERROR, "Invalid sid file! (init function located at 0x%x!", sid_p->init_addr);
+                return_val = 1;
+                goto exit;
+            }
+
+            /* Go to the start position for the entry in file */
+            res = f_lseek(fd_p, sid_p->start_addr_file);
+
+            if(res != FR_OK)
+            {
+                return_val = 1;
+                goto exit;
+            }
+
+            if(sid_p->start_addr_c64 == 0)
+            {
+                prg_t sid_driver_prg;
+                prg_t basic_run_prg;
+
+                uint8_t sid_driver_p[] =
+                {
+                    (SID_DRIVER_START_ADDR & 0xFF), (SID_DRIVER_START_ADDR >> 8),
+                                0xa9, 0x00, 0x85, 0x2a, 0xaa, 0xa8, 0xa5, 0x2a, 0x20, 0xad, 0xde, 0x78, 0xa9, 0x7f,
+                    0x8d, 0x0d, 0xdc, 0x8d, 0x0d, 0xdd, 0xa9, 0x01, 0x8d, 0x1a, 0xd0, 0xa9, 0x1b, 0xa2, 0x08, 0xa0,
+                    0x14, 0x8d, 0x11, 0xd0, 0x8e, 0x16, 0xd0, 0x8c, 0x18, 0xd0, 0xa9, 0x7b, 0xa2, 0x08, 0xa0, 0x7e,
+                    0x8d, 0x14, 0x03, 0x8e, 0x15, 0x03, 0x8c, 0x12, 0xd0, 0xad, 0x0d, 0xdc, 0xad, 0x0d, 0xdd, 0x0e,
+                    0x19, 0xd0, 0x58, 0xa9, 0x27, 0xc5, 0xcb, 0xd0, 0x11, 0xa5, 0x02, 0xc5, 0x2a, 0xf0, 0x17, 0xe6,
+                    0x2a, 0xa9, 0x40, 0xc5, 0xcb, 0xd0, 0xfa, 0x4c, 0x26, 0x08, 0x4c, 0x61, 0x08, 0x20, 0xff, 0xff,
+                    0x0e, 0x19, 0xd0, 0x4c, 0x31, 0xea, 0xa9, 0x00, 0x85, 0x2a, 0x4c, 0x6f, 0x08
+                };
+
+                uint8_t basic_run_p[] =
+                {
+                    (SID_BASIC_START_ADDR & 0xFF), (SID_BASIC_START_ADDR >> 8),
+                                0x0f, 0x08, 0x00, 0x00, 0x99, 0x22, 0x4e, 0x3d, 0x4e, 0x45, 0x58, 0x54, 0x22, 0x00,
+                    0x19, 0x08, 0x0a, 0x00, 0x9e, 0x32, 0x30, 0x38, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                };
+
+                sid_driver_p[0x0B] = sid_p->init_addr & 0xFF;
+                sid_driver_p[0x0C] = sid_p->init_addr >> 8;
+
+                sid_driver_p[0x5E] = sid_p->play_addr & 0xFF;
+                sid_driver_p[0x5F] = sid_p->play_addr >> 8;
+
+                /* Handle sid payload as a normal prg */
+                sid_prg.start_addr_c64 = (sid_payload_p[1] << 8) | sid_payload_p[0];
+                basic_run_prg.start_addr_c64 = (basic_run_p[1] << 8) | basic_run_p[0];
+                sid_driver_prg.start_addr_c64 = (sid_driver_p[1] << 8) | sid_driver_p[0];
+                memcpy((uint8_t *)(CC_RAM_BASE_ADDR + sid_prg.start_addr_c64), &sid_payload_p[2], size - sizeof(sid_t));
+                memcpy((uint8_t *)(CC_RAM_BASE_ADDR + basic_run_prg.start_addr_c64), &basic_run_p[2], sizeof(basic_run_p) - 2);
+                memcpy((uint8_t *)(CC_RAM_BASE_ADDR + sid_driver_prg.start_addr_c64), &sid_driver_p[2], sizeof(sid_driver_p) - 2);
+                memcpy((uint8_t *)(CC_RAM_BASE_ADDR + CC_RAM_OFFSET_MAX_SONG_NO), (uint8_t *)&sid_p->songs - 1, 1);
+            }
+
+            free(file_data_p);
+        }
+        break;
     }
 
 exit:
@@ -463,12 +614,19 @@ void serv_storage_unscan_files()
     g_sel_page = 0;
 }
 
-uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *files_p)
+uint8_t serv_storage_get_max_scan_dirs()
+{
+    return sizeof(g_load_path_pp) / sizeof(char *);
+}
+
+uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *files_p, uint8_t index)
 {
     FRESULT res;
     uint8_t return_val = 1;
     DIR dir;
     FILINFO fno;
+
+    g_index = index;
 
 #ifdef USE_LFN
     char lfn[sizeof(((serv_storage_file_t *)NULL)->fname_p)] = {0};
@@ -487,13 +645,13 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
         serv_storage_unscan_files();
     }
 
-    res = f_opendir(&dir, g_prog_path_pp[0]);
+    res = f_opendir(&dir, g_load_path_pp[index]);
 
     if(res == FR_DISK_ERR && drv_sdcard_inserted())
     {
         /* Perhaps the sd card was removed and inserted? Try one more time */
         drv_sdcard_init();
-        res = f_opendir(&dir, g_prog_path_pp[0]);
+        res = f_opendir(&dir, g_load_path_pp[index]);
     }
 
     if(res == FR_OK)
@@ -542,6 +700,10 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
                 {
                     g_file_list_p[g_file_list_cnt].type = SERV_STORAGE_FILE_TYPE_D64;
                 }
+                else if(strcicmp(ext_p, "sid", 3) == 0)
+                {
+                    g_file_list_p[g_file_list_cnt].type = SERV_STORAGE_FILE_TYPE_SID;
+                }
 
                 g_file_list_cnt++;
 
@@ -565,10 +727,12 @@ uint8_t serv_storage_scan_files(serv_storage_file_t **entries_pp, uint32_t *file
         *files_p = g_file_list_cnt;
         *entries_pp = g_file_list_p;
 
-        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found %ld files when scanning %s", g_file_list_cnt, g_prog_path_pp[0]);
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Found %ld files when scanning %s", g_file_list_cnt, g_load_path_pp[g_index]);
     }
     else
     {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Error when opening %s", g_load_path_pp[g_index]);
+        g_file_list_cnt = 0;
         return_val = 1;
     }
 
@@ -603,7 +767,7 @@ uint8_t serv_storage_load_file(serv_storage_file_t *file_p)
     FRESULT res = FR_OK;
     FIL *fd_p;
     char path_p[256] = {0};
-    sprintf(path_p, "%s/%s", g_prog_path_pp[0], file_p->fname_p);
+    sprintf(path_p, "%s/%s", g_load_path_pp[g_index], file_p->fname_p);
 
     /* Create new fd and try and open file */
     fd_p = (FIL *)calloc(1, sizeof(FIL));
@@ -624,8 +788,16 @@ uint8_t serv_storage_load_file(serv_storage_file_t *file_p)
         return 1;
     }
 
-    serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Sucessfully opened %s!", path_p);
-    process_file(fd_p, file_p->type);
+    if(process_file(fd_p, file_p->type, file_p->size) != 0)
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_WARNING, "Could not process file %s!", path_p);
+        return 1;
+    }
+    else
+    {
+        serv_term_printf(SERV_TERM_PRINT_TYPE_INFO, "Sucessfully opened and processed %s!", path_p);
+        return 0;
+    }
 
     return 0;
 }
